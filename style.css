@@ -1,0 +1,740 @@
+/* ==================================================
+   全体設定
+================================================== */
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+
+    margin: 0;
+    padding: 0;
+
+    overflow: hidden;
+}
+
+body {
+    background: #111;
+
+    font-family:
+        "Arial Rounded MT Bold",
+        "Hiragino Maru Gothic ProN",
+        sans-serif;
+}
+
+
+/* ゲーム中は普通のマウスカーソルを消す */
+body.playing {
+    cursor: none;
+}
+
+/* =========================================
+   ゲーム画面
+========================================= */
+
+#game {
+    position: relative;
+
+    width: 100vw;
+    height: 100vh;
+
+    overflow: hidden;
+
+    /* 背景画像 */
+    background-image: url("images/background.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    background-color: #5aa64a;
+
+    user-select: none;
+}
+
+
+
+/* 背景をほんの少しだけ暗くして風船を見やすくする */
+#game::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.06);
+
+    pointer-events: none;
+
+    z-index: 1;
+}
+
+
+/* ==================================================
+   タイトル
+================================================== */
+
+#title {
+    position: absolute;
+
+    top: 15px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    padding: 10px 28px;
+
+    border: 4px solid white;
+    border-radius: 30px;
+
+    background: rgba(255, 247, 188, 0.95);
+
+    color: #73491f;
+
+    font-size: 28px;
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    white-space: nowrap;
+
+    box-shadow:
+        0 6px 0 rgba(126, 78, 29, 0.5),
+        0 10px 18px rgba(0, 0, 0, 0.25);
+
+    z-index: 40;
+}
+
+
+/* ==================================================
+   残り時間とスコア
+================================================== */
+
+#info {
+    position: absolute;
+
+    top: 15px;
+    left: 15px;
+
+    padding: 14px 20px;
+
+    border: 3px solid white;
+    border-radius: 18px;
+
+    background: rgba(30, 79, 41, 0.88);
+
+    color: white;
+
+    font-size: 24px;
+    font-weight: bold;
+
+    line-height: 1.55;
+
+    text-shadow:
+        2px 2px 3px rgba(0, 0, 0, 0.5);
+
+    box-shadow:
+        0 5px 13px rgba(0, 0, 0, 0.3);
+
+    z-index: 50;
+}
+
+
+/* 時間とスコアの数字 */
+#time,
+#score {
+    color: #ffe66f;
+
+    font-size: 32px;
+}
+
+
+/* ==================================================
+   風船を置くエリア
+================================================== */
+
+#balloonArea {
+    position: absolute;
+
+    inset: 0;
+
+    /*
+        風船画像自体の四角形ではなく、
+        JavaScript側で当たり判定するため
+        エリア全体はクリックを通します
+    */
+    pointer-events: none;
+
+    z-index: 10;
+}
+
+
+/* ==================================================
+   風船
+================================================== */
+
+.balloon {
+    position: absolute;
+
+    /*
+        風船を大きめに表示
+        さらに大きくしたい場合は、この2つを変更
+    */
+    width: 230px;
+    height: 310px;
+
+    object-fit: contain;
+
+    /*
+        画像の四角全体ではクリック判定しません
+        JavaScriptで膨らんだ部分だけを判定します
+    */
+    pointer-events: none;
+
+    user-select: none;
+    -webkit-user-drag: none;
+
+    filter:
+        drop-shadow(
+            0 9px 7px
+            rgba(0, 0, 0, 0.3)
+        );
+
+    animation:
+        balloonFloat
+        2.1s
+        ease-in-out
+        infinite;
+
+    z-index: 12;
+}
+
+
+/* 風船ごとに動くタイミングをずらす */
+.balloon:nth-child(2) {
+    animation-delay: -0.5s;
+}
+
+.balloon:nth-child(3) {
+    animation-delay: -1s;
+}
+
+.balloon:nth-child(4) {
+    animation-delay: -1.5s;
+}
+
+
+/* 風船が上下にふわふわ動く */
+@keyframes balloonFloat {
+
+    0%,
+    100% {
+        transform:
+            translateY(0)
+            rotate(-2deg);
+    }
+
+    50% {
+        transform:
+            translateY(-18px)
+            rotate(2deg);
+    }
+
+}
+
+/* ==================================================
+   撃たれた風船
+================================================== */
+
+.balloon.hit {
+    animation:
+        balloonDeflateFly
+        1.35s
+        cubic-bezier(0.22, 0.7, 0.28, 1)
+        forwards;
+
+    pointer-events: none;
+
+    /* カクつき対策 */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
+    transform-origin: center center;
+}
+
+
+/* ==================================================
+   風船がゆっくりしぼみながら飛んでいく
+================================================== */
+
+@keyframes balloonDeflateFly {
+
+    /* 撃たれた瞬間 */
+    0% {
+        opacity: 1;
+
+        transform:
+            translate3d(0, 0, 0)
+            rotate(0deg)
+            scaleX(1)
+            scaleY(1);
+    }
+
+    /* 少しだけ膨らむ */
+    12% {
+        transform:
+            translate3d(0, 6px, 0)
+            rotate(-2deg)
+            scaleX(1.04)
+            scaleY(1.04);
+    }
+
+    /* 空気が抜け始める */
+    35% {
+        transform:
+            translate3d(
+                calc(var(--fly-x) * 0.2),
+                calc(var(--fly-y) * 0.15),
+                0
+            )
+            rotate(
+                calc(var(--fly-rotate) * 0.15)
+            )
+            scaleX(0.9)
+            scaleY(0.78);
+    }
+
+    /* しぼみながら飛ぶ */
+    65% {
+        opacity: 0.9;
+
+        transform:
+            translate3d(
+                calc(var(--fly-x) * 0.58),
+                calc(var(--fly-y) * 0.55),
+                0
+            )
+            rotate(
+                calc(var(--fly-rotate) * 0.55)
+            )
+            scaleX(0.68)
+            scaleY(0.48);
+    }
+
+    /* ゆっくり消える */
+    100% {
+        opacity: 0;
+
+        transform:
+            translate3d(
+                var(--fly-x),
+                var(--fly-y),
+                0
+            )
+            rotate(
+                var(--fly-rotate)
+            )
+            scaleX(0.38)
+            scaleY(0.22);
+    }
+}
+
+/* ==================================================
+   照準
+================================================== */
+
+#scope {
+    position: absolute;
+
+    width: 165px;
+    height: 165px;
+
+    background-image: url("images/scope.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+
+    transform: translate(-50%, -50%);
+
+    pointer-events: none;
+
+    display: none;
+
+    z-index: 100;
+}
+
+
+/* ==================================================
+   HIT・MISS画像
+================================================== */
+
+#shotResult {
+    position: absolute;
+
+    width: 165px;
+    height: auto;
+
+    opacity: 0;
+
+    display: none;
+
+    pointer-events: none;
+
+    transform:
+        translate(-50%, -50%)
+        scale(0.65);
+
+    z-index: 95;
+}
+
+
+/* HIT・MISS表示アニメーション */
+#shotResult.show {
+    display: block;
+
+    animation:
+        showShotResult
+        0.5s
+        ease-out
+        forwards;
+}
+
+
+@keyframes showShotResult {
+
+    0% {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(0.55);
+    }
+
+    25% {
+        opacity: 1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(1);
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -72%)
+            scale(0.9);
+    }
+
+}
+
+
+/* ==================================================
+   ゲーム終了時の暗い背景
+================================================== */
+
+#resultOverlay {
+    position: absolute;
+
+    inset: 0;
+
+    background: rgba(0, 0, 0, 0.5);
+
+    display: none;
+
+    z-index: 55;
+}
+
+
+/* ==================================================
+   結果メッセージ
+================================================== */
+
+#message {
+    position: absolute;
+
+    top: 43%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    width: min(90%, 650px);
+
+    padding: 30px;
+
+    border: 5px solid white;
+    border-radius: 28px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #fff7b5,
+            #ffc95c
+        );
+
+    color: #713f20;
+
+    font-size: 38px;
+    font-weight: bold;
+
+    text-align: center;
+    line-height: 1.5;
+
+    text-shadow:
+        1px 1px 0 white;
+
+    box-shadow:
+        0 9px 0 #b86c24,
+        0 15px 25px rgba(0, 0, 0, 0.35);
+
+    display: none;
+
+    z-index: 65;
+}
+
+
+/* ==================================================
+   スタートボタン
+================================================== */
+
+#startButton {
+    position: absolute;
+
+    top: 64%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    min-width: 290px;
+
+    padding: 18px 38px;
+
+    border: 5px solid white;
+    border-radius: 40px;
+
+    background:
+        linear-gradient(
+            180deg,
+            #ffb342,
+            #f17822
+        );
+
+    color: white;
+
+    font-size: 29px;
+    font-weight: bold;
+
+    letter-spacing: 1px;
+
+    text-shadow:
+        2px 2px 2px
+        rgba(100, 45, 10, 0.5);
+
+    box-shadow:
+        0 8px 0 #a84e16,
+        0 13px 20px rgba(0, 0, 0, 0.3);
+
+    cursor: pointer;
+
+    z-index: 75;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+
+/* ボタンにマウスを乗せたとき */
+#startButton:hover {
+    transform:
+        translate(-50%, -50%)
+        scale(1.05);
+}
+
+
+/* ボタンを押したとき */
+#startButton:active {
+    transform:
+        translate(-50%, -46%)
+        scale(0.98);
+
+    box-shadow:
+        0 4px 0 #a84e16,
+        0 7px 12px rgba(0, 0, 0, 0.25);
+}
+
+
+/* ==================================================
+   小さな画面への対応
+================================================== */
+
+@media (max-width: 800px) {
+
+    #title {
+        top: 10px;
+
+        padding: 8px 16px;
+
+        font-size: 19px;
+    }
+
+    #info {
+        top: 70px;
+        left: 10px;
+
+        font-size: 18px;
+    }
+
+    #time,
+    #score {
+        font-size: 24px;
+    }
+
+    .balloon {
+        width: 170px;
+        height: 230px;
+    }
+
+    #scope {
+        width: 125px;
+        height: 125px;
+    }
+
+    #message {
+        font-size: 28px;
+    }
+
+    #startButton {
+        min-width: 240px;
+
+        font-size: 24px;
+    }
+
+}
+
+/* ==================================================
+   ゴールド風船
+================================================== */
+
+.balloon.gold {
+    filter:
+        drop-shadow(0 0 10px #fff8a8)
+        drop-shadow(0 0 20px #ffd700)
+        drop-shadow(0 8px 7px rgba(0, 0, 0, 0.3));
+
+    animation:
+        goldBalloonFloat 1.5s ease-in-out infinite,
+        goldBalloonGlow 0.8s ease-in-out infinite alternate;
+}
+
+
+/* ゴールド風船のふわふわ */
+@keyframes goldBalloonFloat {
+
+    0%,
+    100% {
+        transform:
+            translateY(0)
+            rotate(-3deg);
+    }
+
+    50% {
+        transform:
+            translateY(-22px)
+            rotate(3deg);
+    }
+}
+
+
+/* ゴールド風船の光 */
+@keyframes goldBalloonGlow {
+
+    0% {
+        filter:
+            drop-shadow(0 0 8px #fff8a8)
+            drop-shadow(0 0 14px #ffd700)
+            drop-shadow(0 8px 7px rgba(0, 0, 0, 0.3));
+    }
+
+    100% {
+        filter:
+            drop-shadow(0 0 16px #ffffff)
+            drop-shadow(0 0 30px #ffd700)
+            drop-shadow(0 8px 7px rgba(0, 0, 0, 0.3));
+    }
+}
+
+
+/* ==================================================
+   レア風船の得点表示
+================================================== */
+
+.rare-score {
+    position: absolute;
+
+    transform: translate(-50%, -50%);
+
+    color: #fff5a2;
+
+    font-size: 38px;
+    font-weight: bold;
+
+    text-align: center;
+    line-height: 1.1;
+
+    text-shadow:
+        0 0 4px #ffffff,
+        0 0 9px #ffdd00,
+        3px 3px 2px #8a5300;
+
+    pointer-events: none;
+
+    z-index: 110;
+
+    animation:
+        showRareScore
+        0.85s
+        ease-out
+        forwards;
+}
+
+
+@keyframes showRareScore {
+
+    0% {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(0.4);
+    }
+
+    25% {
+        opacity: 1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.2);
+    }
+
+    65% {
+        opacity: 1;
+
+        transform:
+            translate(-50%, -65%)
+            scale(1);
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -100%)
+            scale(0.85);
+    }
+}

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>ジャングルバルーンシューティング</title>
+
+    <!-- CSSを読み込む -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- ゲーム画面全体 -->
+    <main id="game">
+
+        <!-- ゲームタイトル -->
+        <div id="title">
+            ジャングルバルーンシューティング
+        </div>
+
+        <!-- 残り時間とスコア -->
+        <div id="info">
+
+            <div>
+                残り時間：
+                <span id="time">20</span>
+                秒
+            </div>
+
+            <div>
+                スコア：
+                <span id="score">0</span>
+            </div>
+
+        </div>
+
+        <!--
+            風船を表示する場所
+            風船本体はJavaScriptで自動的に追加します
+        -->
+        <div id="balloonArea"></div>
+
+        <!-- マウスについてくる照準 -->
+        <div id="scope"></div>
+
+        <!-- HIT・MISSの画像 -->
+        <img
+            id="shotResult"
+            src=""
+            alt=""
+        >
+
+        <!-- ゲーム終了時に画面を暗くする背景 -->
+        <div id="resultOverlay"></div>
+
+        <!-- ゲーム終了メッセージ -->
+        <div id="message"></div>
+
+        <!-- ゲーム開始・再挑戦ボタン -->
+        <button id="startButton">
+            ゲームスタート
+        </button>
+
+    </main>
+
+    <!-- JavaScriptを読み込む -->
+    <script src="script.js"></script>
+
+</body>
+
+</html>
