@@ -1,278 +1,394 @@
 // ==========================================================
 // ジャングルバルーンシューティング
-// script.js
+// パソコン側
 //
-// 主な機能
-// ・赤、青、黄色の風船をランダム表示
-// ・最初は3個、残り10秒で4個に増える
-// ・風船を大きく表示
-// ・風船の膨らんだ部分だけHIT判定
-// ・ひもや透明部分はMISS判定
-// ・HIT、MISS画像と効果音
-// ・風船が上へ飛んで消える
-// ・20秒でゲーム終了
+// ・Firebaseでスマホの発射を受信
+// ・ArUcoマーカーで照準操作
+// ・マウス操作なし
+// ・風船の膨らんだ部分だけ当たり判定
 // ==========================================================
 
 
 // ==========================================================
-// ① HTML要素を取得
+// Firebase SDK
 // ==========================================================
 
-// ゲーム画面全体
+import {
+    initializeApp
+} from
+"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+
+import {
+    getAuth,
+    signInAnonymously
+} from
+"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
+
+import {
+    getDatabase,
+    ref,
+    onValue
+} from
+"https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
+
+
+// ==========================================================
+// Firebase設定
+// ==========================================================
+
+const firebaseConfig = {
+    apiKey:
+        "AIzaSyCC7CgZIP6RsU18XK2Vb_7_4nk9Cj_5NcM",
+
+    authDomain:
+        "wakutatu-shooting.firebaseapp.com",
+
+    databaseURL:
+        "https://wakutatu-shooting-default-rtdb.asia-southeast1.firebasedatabase.app",
+
+    projectId:
+        "wakutatu-shooting",
+
+    storageBucket:
+        "wakutatu-shooting.firebasestorage.app",
+
+    messagingSenderId:
+        "720905273138",
+
+    appId:
+        "1:720905273138:web:df97327c6007b5cbc1612b"
+};
+
+
+// ==========================================================
+// スマホ側と同じ部屋名
+// ==========================================================
+
+const ROOM_ID = "main";
+
+
+// ==========================================================
+// ゲーム設定
+// ==========================================================
+
+const GAME_TIME = 20;
+
+const START_BALLOON_COUNT = 3;
+
+const LAST_BALLOON_COUNT = 4;
+
+const ADD_BALLOON_TIME = 10;
+
+const GOLD_BALLOON_RATE = 0.1;
+
+const BALLOON_WIDTH = 230;
+
+const BALLOON_HEIGHT = 310;
+
+const SCREEN_MARGIN = 25;
+
+const TOP_MARGIN = 130;
+
+
+// ==========================================================
+// 風船の当たり判定
+// ==========================================================
+
+const HIT_CENTER_X = 0.5;
+
+const HIT_CENTER_Y = 0.29;
+
+const HIT_RADIUS_X = 0.25;
+
+const HIT_RADIUS_Y = 0.28;
+
+
+// ==========================================================
+// ArUco設定
+// ==========================================================
+
+const DETECT_WIDTH = 640;
+
+const DETECT_HEIGHT = 360;
+
+
+/*
+   照準が左右逆ならtrueに変更
+*/
+
+const MIRROR_AIM_X = false;
+
+
+/*
+   小さいほど滑らか、大きいほど反応が速い
+*/
+
+const AIM_SMOOTH = 0.22;
+
+
+// ==========================================================
+// HTML要素
+// ==========================================================
+
 const game =
     document.getElementById("game");
 
-// 風船を入れる場所
+const video =
+    document.getElementById("camera");
+
+const detectCanvas =
+    document.getElementById("detectCanvas");
+
+const detectContext =
+    detectCanvas.getContext(
+        "2d",
+        {
+            willReadFrequently: true
+        }
+    );
+
 const balloonArea =
     document.getElementById("balloonArea");
 
-// 照準
 const scope =
     document.getElementById("scope");
 
-// 残り時間
+const shotFlash =
+    document.getElementById("shotFlash");
+
 const timeText =
     document.getElementById("time");
 
-// スコア
 const scoreText =
     document.getElementById("score");
 
-// HIT・MISS画像
-const shotResult =
-    document.getElementById("shotResult");
+const countdown =
+    document.getElementById("countdown");
 
-// 終了時の暗い背景
+const instruction =
+    document.getElementById("instruction");
+
 const resultOverlay =
     document.getElementById("resultOverlay");
 
-// 終了メッセージ
 const message =
     document.getElementById("message");
 
-// スタートボタン
 const startButton =
     document.getElementById("startButton");
 
+const cameraStatus =
+    document.getElementById("cameraStatus");
+
+const markerStatus =
+    document.getElementById("markerStatus");
+
+const firebaseStatus =
+    document.getElementById("firebaseStatus");
+
 
 // ==========================================================
-// ② HTML要素のエラーチェック
+// 必須要素の確認
 // ==========================================================
 
-if (!game) {
-    console.error(
-        "HTMLエラー：#game が見つかりません"
-    );
-}
+const requiredElements = {
+    game,
+    video,
+    detectCanvas,
+    balloonArea,
+    scope,
+    shotFlash,
+    timeText,
+    scoreText,
+    countdown,
+    instruction,
+    resultOverlay,
+    message,
+    startButton,
+    cameraStatus,
+    markerStatus,
+    firebaseStatus
+};
 
-if (!balloonArea) {
-    console.error(
-        "HTMLエラー：#balloonArea が見つかりません"
-    );
-}
+for (
+    const [name, element]
+    of Object.entries(requiredElements)
+) {
 
-if (!scope) {
-    console.error(
-        "HTMLエラー：#scope が見つかりません"
-    );
-}
+    if (!element) {
 
-if (!timeText) {
-    console.error(
-        "HTMLエラー：#time が見つかりません"
-    );
-}
-
-if (!scoreText) {
-    console.error(
-        "HTMLエラー：#score が見つかりません"
-    );
-}
-
-if (!shotResult) {
-    console.error(
-        "HTMLエラー：#shotResult が見つかりません"
-    );
-}
-
-if (!resultOverlay) {
-    console.error(
-        "HTMLエラー：#resultOverlay が見つかりません"
-    );
-}
-
-if (!message) {
-    console.error(
-        "HTMLエラー：#message が見つかりません"
-    );
-}
-
-if (!startButton) {
-    console.error(
-        "HTMLエラー：#startButton が見つかりません"
-    );
+        console.error(
+            "HTML要素が見つかりません：",
+            name
+        );
+    }
 }
 
 
 // ==========================================================
-// ③ ゲームの基本設定
-// ==========================================================
-
-// 制限時間
-const GAME_TIME = 20;
-
-// 最初に出す風船の数
-const START_BALLOON_COUNT = 3;
-
-// 残り10秒から出す風船の数
-const LAST_BALLOON_COUNT = 4;
-
-// 風船を増やす残り時間
-const ADD_BALLOON_TIME = 10;
-
-// クリアに必要なスコア
-const CLEAR_SCORE = 15;
-
-// CSSで表示している風船のサイズ
-const BALLOON_WIDTH = 230;
-const BALLOON_HEIGHT = 310;
-
-// 画面端から離す距離
-const SCREEN_MARGIN = 25;
-
-// タイトルやスコアを避ける上側の距離
-const TOP_MARGIN = 125;
-
-
-// ==========================================================
-// ④ 風船本体の当たり判定設定
-// ==========================================================
-
-/*
-    風船画像全体を、横1・縦1として考えます。
-
-    HIT_CENTER_X：
-    風船本体の中心の横位置
-
-    HIT_CENTER_Y：
-    風船本体の中心の縦位置
-
-    HIT_RADIUS_X：
-    楕円の横方向の大きさ
-
-    HIT_RADIUS_Y：
-    楕円の縦方向の大きさ
-
-    風船本体だけを判定するため、
-    ひも部分は範囲に含めません。
-*/
-
-const HIT_CENTER_X = 0.5;
-const HIT_CENTER_Y = 0.29;
-
-const HIT_RADIUS_X = 0.23;
-const HIT_RADIUS_Y = 0.27;
-
-
-/*
-    小さい子向けに当たり判定を少し広げたい場合
-
-    HIT_RADIUS_Xを0.26
-    HIT_RADIUS_Yを0.30
-
-    くらいにすると当てやすくなります。
-*/
-
-
-// ==========================================================
-// ⑤ 使用する風船画像
-// ==========================================================
-
-// ==========================================================
-// 風船の種類と点数
+// 風船データ
 // ==========================================================
 
 const normalBalloons = [
     {
-        image: "images/redballoon.png",
-        points: 1,
-        type: "normal"
+        image:
+            "images/redballoon.png",
+
+        points:
+            1,
+
+        type:
+            "normal"
     },
+
     {
-        image: "images/blueballoon.png",
-        points: 1,
-        type: "normal"
+        image:
+            "images/blueballoon.png",
+
+        points:
+            1,
+
+        type:
+            "normal"
     },
+
     {
-        image: "images/yellowballoon.png",
-        points: 1,
-        type: "normal"
+        image:
+            "images/yellowballoon.png",
+
+        points:
+            1,
+
+        type:
+            "normal"
     }
 ];
 
-// レアなゴールド風船
+
 const goldBalloon = {
-    image: "images/goldballoon.png",
-    points: 5,
-    type: "gold"
+    image:
+        "images/goldballoon.png",
+
+    points:
+        5,
+
+    type:
+        "gold"
 };
 
-// ゴールド風船の出現率
-// 0.1なら10％
-const GOLD_BALLOON_RATE = 0.1;
 
 // ==========================================================
-// ⑥ 効果音を読み込む
+// 効果音
 // ==========================================================
 
-// 撃った瞬間
 const shotSound =
     new Audio("sound/shot.mp3");
 
-// 風船に当たったとき
-const hitSound =
+const popSound =
     new Audio("sound/hit.mp3");
 
-// 外したとき
-const missSound =
-    new Audio("sound/miss.mp3");
-
-// ゲームクリア時
 const clearSound =
     new Audio("sound/clear.mp3");
 
+shotSound.volume =
+    0.42;
 
-// 効果音の音量
-// 0が無音、1が最大
-shotSound.volume = 0.45;
-hitSound.volume = 0.6;
-missSound.volume = 0.4;
-clearSound.volume = 0.7;
+popSound.volume =
+    0.68;
+
+clearSound.volume =
+    0.72;
 
 
 // ==========================================================
-// ⑦ 効果音を再生する関数
+// ゲーム中に変化する値
+// ==========================================================
+
+let score = 0;
+
+let time =
+    GAME_TIME;
+
+let playing =
+    false;
+
+let countdownRunning =
+    false;
+
+let gameTimer =
+    null;
+
+let extraBalloonAdded =
+    false;
+
+let balloonId =
+    0;
+
+
+// ==========================================================
+// ArUco関連
+// ==========================================================
+
+let detector =
+    null;
+
+let cameraStarted =
+    false;
+
+let markerDetected =
+    false;
+
+let aimX =
+    window.innerWidth / 2;
+
+let aimY =
+    window.innerHeight / 2;
+
+let targetAimX =
+    aimX;
+
+let targetAimY =
+    aimY;
+
+let detectionFrame =
+    0;
+
+
+// ==========================================================
+// Firebase関連
+// ==========================================================
+
+let database =
+    null;
+
+/*
+   初回読み込み時に現在の発射番号を記憶します。
+*/
+
+let lastFireCounter =
+    null;
+
+
+// ==========================================================
+// 効果音を再生
 // ==========================================================
 
 function playSound(sound) {
 
-    /*
-        同じ音を連続で鳴らせるように
-        音声データを複製します
-    */
     const soundCopy =
         sound.cloneNode();
 
     soundCopy.volume =
         sound.volume;
 
-    soundCopy.currentTime = 0;
+    soundCopy.currentTime =
+        0;
 
     soundCopy.play().catch(
         function (error) {
 
             console.warn(
-                "効果音を再生できませんでした：",
+                "効果音を再生できません：",
                 error
             );
         }
@@ -281,98 +397,471 @@ function playSound(sound) {
 
 
 // ==========================================================
-// ⑧ ゲーム中に変化する値
+// Firebaseへ接続
 // ==========================================================
 
-// 現在のスコア
-let score = 0;
+async function connectFirebase() {
 
-// 現在の残り時間
-let time = GAME_TIME;
+    try {
 
-// ゲーム中かどうか
-let playing = false;
+        firebaseStatus.textContent =
+            "認証中";
 
-// ゲームのタイマー
-let gameTimer = null;
+        const app =
+            initializeApp(
+                firebaseConfig
+            );
 
-// HIT・MISSを消すタイマー
-let resultTimer = null;
+        const auth =
+            getAuth(app);
 
-// 後半の風船を追加したかどうか
-let extraBalloonAdded = false;
+        database =
+            getDatabase(app);
 
-// 風船につける番号
-let balloonId = 0;
+        await signInAnonymously(
+            auth
+        );
 
+        firebaseStatus.textContent =
+            "受信準備中";
 
-// ==========================================================
-// ⑨ ゲーム設定をコンソールに表示
-// ==========================================================
+        console.log(
+            "Firebase匿名認証成功"
+        );
 
-console.log(
-    "ゲーム設定を読み込みました"
-);
+        listenForShots();
 
-console.log({
-    制限時間: GAME_TIME,
-    最初の風船数: START_BALLOON_COUNT,
-    後半の風船数: LAST_BALLOON_COUNT,
-    風船の横幅: BALLOON_WIDTH,
-    風船の高さ: BALLOON_HEIGHT,
-    クリアスコア: CLEAR_SCORE
-});
+    } catch (error) {
 
+        firebaseStatus.textContent =
+            "接続エラー";
 
-// ==========================================================
-// ⑩ 照準をマウスに追従させる
-// ==========================================================
-
-document.addEventListener(
-    "mousemove",
-    function (event) {
-
-        scope.style.left =
-            event.clientX + "px";
-
-        scope.style.top =
-            event.clientY + "px";
+        console.error(
+            "Firebase接続エラー：",
+            error
+        );
     }
-);
+}
 
 
 // ==========================================================
-// ⑪ ランダムな風船画像を選ぶ
+// スマホの発射番号を監視
 // ==========================================================
 
+function listenForShots() {
+
+    const fireCounterReference =
+        ref(
+            database,
+            "rooms/" +
+            ROOM_ID +
+            "/fireCounter"
+        );
+
+    onValue(
+        fireCounterReference,
+
+        function (snapshot) {
+
+            const currentCounter =
+                Number(
+                    snapshot.val()
+                ) || 0;
+
+            /*
+               最初の読み込み時は、
+               現在の番号を記録するだけです。
+            */
+
+            if (
+                lastFireCounter ===
+                null
+            ) {
+
+                lastFireCounter =
+                    currentCounter;
+
+                firebaseStatus.textContent =
+                    "受信準備完了";
+
+                console.log(
+                    "発射受信準備完了：",
+                    currentCounter
+                );
+
+                return;
+            }
+
+            /*
+               数字が変わっていなければ無視
+            */
+
+            if (
+                currentCounter ===
+                lastFireCounter
+            ) {
+                return;
+            }
+
+            console.log(
+                "スマホから発射を受信：",
+                {
+                    前回:
+                        lastFireCounter,
+
+                    今回:
+                        currentCounter
+                }
+            );
+
+            lastFireCounter =
+                currentCounter;
+
+            firebaseStatus.textContent =
+                "発射受信！";
+
+            /*
+               現在のArUco照準位置へ発射
+            */
+
+            shootAt(
+                aimX,
+                aimY
+            );
+
+            setTimeout(
+                function () {
+
+                    firebaseStatus.textContent =
+                        "受信準備完了";
+
+                },
+                350
+            );
+        },
+
+        function (error) {
+
+            firebaseStatus.textContent =
+                "受信エラー";
+
+            console.error(
+                "Firebase受信エラー：",
+                error
+            );
+        }
+    );
+}
+
+
 // ==========================================================
-// 出現させる風船をランダムで選ぶ
+// カメラ開始
+// ==========================================================
+
+async function startCamera() {
+
+    if (cameraStarted) {
+        return;
+    }
+
+    cameraStatus.textContent =
+        "接続中";
+
+    try {
+
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video: {
+                    width: {
+                        ideal:
+                            1280
+                    },
+
+                    height: {
+                        ideal:
+                            720
+                    },
+
+                    facingMode:
+                        "environment"
+                },
+
+                audio:
+                    false
+            });
+
+        video.srcObject =
+            stream;
+
+        await video.play();
+
+        cameraStarted =
+            true;
+
+        cameraStatus.textContent =
+            "接続済み";
+
+        detectCanvas.width =
+            DETECT_WIDTH;
+
+        detectCanvas.height =
+            DETECT_HEIGHT;
+
+        if (
+            typeof AR ===
+            "undefined"
+        ) {
+
+            throw new Error(
+                "ArUcoライブラリを読み込めませんでした"
+            );
+        }
+
+        detector =
+            new AR.Detector();
+
+        requestAnimationFrame(
+            updateAruco
+        );
+
+    } catch (error) {
+
+        cameraStatus.textContent =
+            "使用不可";
+
+        markerStatus.textContent =
+            "カメラなし";
+
+        console.error(
+            "カメラ開始エラー：",
+            error
+        );
+    }
+}
+
+
+// ==========================================================
+// ArUcoマーカー検出
+// ==========================================================
+
+function updateAruco() {
+
+    detectionFrame++;
+
+    if (
+        detectionFrame % 2 === 0 &&
+        video.readyState >=
+        video.HAVE_CURRENT_DATA &&
+        detector
+    ) {
+
+        detectContext.drawImage(
+            video,
+            0,
+            0,
+            DETECT_WIDTH,
+            DETECT_HEIGHT
+        );
+
+        try {
+
+            const imageData =
+                detectContext.getImageData(
+                    0,
+                    0,
+                    DETECT_WIDTH,
+                    DETECT_HEIGHT
+                );
+
+            const markers =
+                detector.detect(
+                    imageData
+                );
+
+            if (
+                markers.length > 0
+            ) {
+
+                markerDetected =
+                    true;
+
+                markerStatus.textContent =
+                    "検出中";
+
+                scope.classList.add(
+                    "detected"
+                );
+
+                const marker =
+                    markers[0];
+
+                let markerX =
+                    0;
+
+                let markerY =
+                    0;
+
+                for (
+                    const corner
+                    of marker.corners
+                ) {
+
+                    markerX +=
+                        corner.x;
+
+                    markerY +=
+                        corner.y;
+                }
+
+                markerX /=
+                    marker.corners.length;
+
+                markerY /=
+                    marker.corners.length;
+
+                if (MIRROR_AIM_X) {
+
+                    markerX =
+                        DETECT_WIDTH -
+                        markerX;
+                }
+
+                targetAimX =
+                    (
+                        markerX /
+                        DETECT_WIDTH
+                    ) *
+                    window.innerWidth;
+
+                targetAimY =
+                    (
+                        markerY /
+                        DETECT_HEIGHT
+                    ) *
+                    window.innerHeight;
+
+            } else {
+
+                markerDetected =
+                    false;
+
+                markerStatus.textContent =
+                    "未検出";
+
+                scope.classList.remove(
+                    "detected"
+                );
+            }
+
+        } catch (error) {
+
+            console.warn(
+                "ArUco検出エラー：",
+                error
+            );
+        }
+    }
+
+    aimX +=
+        (
+            targetAimX -
+            aimX
+        ) *
+        AIM_SMOOTH;
+
+    aimY +=
+        (
+            targetAimY -
+            aimY
+        ) *
+        AIM_SMOOTH;
+
+    updateScopePosition();
+
+    requestAnimationFrame(
+        updateAruco
+    );
+}
+
+
+// ==========================================================
+// 照準位置を更新
+// ==========================================================
+
+function updateScopePosition() {
+
+    scope.style.left =
+        aimX + "px";
+
+    scope.style.top =
+        aimY + "px";
+}
+
+
+// ==========================================================
+// ランダムな風船を選ぶ
 // ==========================================================
 
 function getRandomBalloonData() {
 
-    // 0〜1のランダムな数字を作る
-    const randomNumber = Math.random();
+    if (
+        Math.random() <
+        GOLD_BALLOON_RATE
+    ) {
 
-    // 10％の確率でゴールド風船
-    if (randomNumber < GOLD_BALLOON_RATE) {
-
-        console.log("レアなゴールド風船が選ばれました");
+        console.log(
+            "ゴールド風船が出現"
+        );
 
         return goldBalloon;
     }
 
-    // 通常風船をランダムで選ぶ
-    const randomIndex = Math.floor(
-        Math.random() * normalBalloons.length
-    );
+    const randomIndex =
+        Math.floor(
+            Math.random() *
+            normalBalloons.length
+        );
 
-    return normalBalloons[randomIndex];
+    return normalBalloons[
+        randomIndex
+    ];
 }
 
+
 // ==========================================================
-// ⑫ 風船を1個作る
+// 風船情報を設定
 // ==========================================================
+
+function applyBalloonData(
+    balloon,
+    balloonData
+) {
+
+    balloon.classList.remove(
+        "gold"
+    );
+
+    balloon.src =
+        balloonData.image;
+
+    balloon.dataset.points =
+        balloonData.points;
+
+    balloon.dataset.type =
+        balloonData.type;
+
+    if (
+        balloonData.type ===
+        "gold"
+    ) {
+
+        balloon.classList.add(
+            "gold"
+        );
+    }
+}
+
 
 // ==========================================================
 // 風船を1個作る
@@ -380,38 +869,31 @@ function getRandomBalloonData() {
 
 function createBalloon() {
 
-    // 画像要素を作成
-    const balloon = document.createElement("img");
+    const balloon =
+        document.createElement(
+            "img"
+        );
 
-    // CSS用のクラス
-    balloon.classList.add("balloon");
+    balloon.classList.add(
+        "balloon"
+    );
 
-    // 出現させる風船を選ぶ
-    const balloonData = getRandomBalloonData();
+    balloon.alt =
+        "風船";
 
-    // 画像を設定
-    balloon.src = balloonData.image;
+    balloon.draggable =
+        false;
 
-    // 点数を保存
-    balloon.dataset.points = balloonData.points;
-
-    // 風船の種類を保存
-    balloon.dataset.type = balloonData.type;
-
-    balloon.alt = "風船";
-    balloon.draggable = false;
-
-    // デバッグ用の番号
     balloonId++;
 
-    balloon.dataset.number = balloonId;
+    balloon.dataset.number =
+        balloonId;
 
-    // ゴールド風船の場合は専用クラスを追加
-    if (balloonData.type === "gold") {
-        balloon.classList.add("gold");
-    }
+    applyBalloonData(
+        balloon,
+        getRandomBalloonData()
+    );
 
-    // 画像の読み込み失敗
     balloon.addEventListener(
         "error",
         function () {
@@ -423,65 +905,67 @@ function createBalloon() {
         }
     );
 
-    // 風船を画面に追加
-    balloonArea.appendChild(balloon);
+    balloonArea.appendChild(
+        balloon
+    );
 
-    // ランダムな場所へ移動
-    moveBalloon(balloon);
-
-    console.log(
-        "風船を作成しました",
-        {
-            番号: balloon.dataset.number,
-            種類: balloon.dataset.type,
-            点数: balloon.dataset.points,
-            画像: balloon.src
-        }
+    moveBalloon(
+        balloon
     );
 
     return balloon;
 }
 
+
 // ==========================================================
-// ⑬ 風船をランダムな位置へ移動
+// 風船をランダムな場所へ移動
 // ==========================================================
 
 function moveBalloon(balloon) {
 
-    // ゲーム画面の大きさ
-    const gameWidth =
-        game.clientWidth;
+    const rect =
+        balloon.getBoundingClientRect();
 
-    const gameHeight =
-        game.clientHeight;
+    const currentWidth =
+        rect.width ||
+        BALLOON_WIDTH;
 
-    // 風船が置ける最大位置
+    const currentHeight =
+        rect.height ||
+        BALLOON_HEIGHT;
+
     const maxX =
-        gameWidth -
-        BALLOON_WIDTH -
-        SCREEN_MARGIN;
+        Math.max(
+            SCREEN_MARGIN,
+            game.clientWidth -
+            currentWidth -
+            SCREEN_MARGIN
+        );
 
     const maxY =
-        gameHeight -
-        BALLOON_HEIGHT -
-        SCREEN_MARGIN;
+        Math.max(
+            TOP_MARGIN,
+            game.clientHeight -
+            currentHeight -
+            SCREEN_MARGIN
+        );
 
-    // ランダムな横位置
     const randomX =
         SCREEN_MARGIN +
         Math.random() *
         Math.max(
             0,
-            maxX - SCREEN_MARGIN
+            maxX -
+            SCREEN_MARGIN
         );
 
-    // ランダムな縦位置
     const randomY =
         TOP_MARGIN +
         Math.random() *
         Math.max(
             0,
-            maxY - TOP_MARGIN
+            maxY -
+            TOP_MARGIN
         );
 
     balloon.style.left =
@@ -489,72 +973,47 @@ function moveBalloon(balloon) {
 
     balloon.style.top =
         randomY + "px";
-
-    console.log(
-        "風船を移動しました：",
-        "風船番号 " +
-        balloon.dataset.number,
-        "X=" + Math.round(randomX),
-        "Y=" + Math.round(randomY)
-    );
 }
 
 
 // ==========================================================
-// ⑭ 指定された数まで風船を増やす
+// 指定された数まで風船を増やす
 // ==========================================================
 
 function setBalloonCount(
     targetCount
 ) {
 
-    let currentCount =
-        balloonArea.children.length;
-
-    console.log(
-        "風船数を変更します：",
-        currentCount,
-        "→",
-        targetCount
-    );
-
     while (
-        currentCount <
+        balloonArea.children.length <
         targetCount
     ) {
 
         createBalloon();
-
-        currentCount++;
     }
 }
 
 
 // ==========================================================
-// ⑮ すべての風船を削除する
+// 風船をすべて削除
 // ==========================================================
 
 function removeAllBalloons() {
 
     balloonArea.innerHTML =
         "";
-
-    console.log(
-        "すべての風船を削除しました"
-    );
 }
 
 
 // ==========================================================
-// ⑯ 風船本体に当たったか調べる
+// 命中した風船を探す
 // ==========================================================
 
 function findHitBalloon(
-    mouseX,
-    mouseY
+    shotX,
+    shotY
 ) {
 
-    // 表示中の風船をすべて取得
     const balloons =
         Array.from(
             document.querySelectorAll(
@@ -562,10 +1021,6 @@ function findHitBalloon(
             )
         );
 
-    /*
-        後から表示された風船を
-        優先して判定します
-    */
     balloons.reverse();
 
     for (
@@ -573,23 +1028,16 @@ function findHitBalloon(
         of balloons
     ) {
 
-        // すでに飛んでいる風船は判定しない
         if (
             balloon.classList.contains(
-                "hit"
+                "popping"
             )
         ) {
             continue;
         }
 
-        // 風船画像の現在位置とサイズ
         const rect =
             balloon.getBoundingClientRect();
-
-        /*
-            風船の膨らんだ部分を
-            楕円形として判定します
-        */
 
         const centerX =
             rect.left +
@@ -609,29 +1057,19 @@ function findHitBalloon(
             rect.height *
             HIT_RADIUS_Y;
 
-        /*
-            クリック位置を楕円判定用の
-            数値へ変換します
-        */
-
         const normalizedX =
             (
-                mouseX -
+                shotX -
                 centerX
             ) /
             radiusX;
 
         const normalizedY =
             (
-                mouseY -
+                shotY -
                 centerY
             ) /
             radiusY;
-
-        /*
-            値が1以下なら
-            楕円の中なのでHIT
-        */
 
         const ellipseValue =
             normalizedX *
@@ -639,473 +1077,584 @@ function findHitBalloon(
             normalizedY *
             normalizedY;
 
-        const isInsideBalloon =
-            ellipseValue <= 1;
-
-        console.log(
-            "当たり判定：",
-            "風船番号 " +
-            balloon.dataset.number,
-            "判定値=" +
-            ellipseValue.toFixed(2),
-            isInsideBalloon
-                ? "HIT範囲内"
-                : "範囲外"
-        );
-
         if (
-            isInsideBalloon
+            ellipseValue <= 1
         ) {
 
             return balloon;
         }
     }
 
-    // どの風船にも当たっていない
     return null;
 }
 
 
 // ==========================================================
-// ⑰ HIT・MISS画像を表示する
+// 指定した座標へ発射
 // ==========================================================
 
-function showShotResult(
-    imagePath,
+function shootAt(
+    shotX,
+    shotY
+) {
+
+    console.log(
+        "発射処理：",
+        {
+            x:
+                Math.round(shotX),
+
+            y:
+                Math.round(shotY),
+
+            playing,
+            countdownRunning
+        }
+    );
+
+    /*
+       ゲーム開始後のみ射撃できます。
+    */
+
+    if (
+        !playing ||
+        countdownRunning
+    ) {
+
+        console.log(
+            "ゲーム中ではないため発射しません"
+        );
+
+        return;
+    }
+
+    playSound(
+        shotSound
+    );
+
+    playScopeAnimation();
+
+    showShotFlash(
+        shotX,
+        shotY
+    );
+
+    const hitBalloon =
+        findHitBalloon(
+            shotX,
+            shotY
+        );
+
+    if (hitBalloon) {
+
+        handleHit(
+            hitBalloon,
+            shotX,
+            shotY
+        );
+    }
+}
+
+
+// ==========================================================
+// 照準の発射アニメーション
+// ==========================================================
+
+function playScopeAnimation() {
+
+    scope.classList.remove(
+        "shooting"
+    );
+
+    void scope.offsetWidth;
+
+    scope.classList.add(
+        "shooting"
+    );
+
+    setTimeout(
+        function () {
+
+            scope.classList.remove(
+                "shooting"
+            );
+
+        },
+        180
+    );
+}
+
+
+// ==========================================================
+// 発射位置を光らせる
+// ==========================================================
+
+function showShotFlash(
     x,
     y
 ) {
 
-    clearTimeout(
-        resultTimer
-    );
-
-    // 前のアニメーションを解除
-    shotResult.classList.remove(
-        "show"
-    );
-
-    // 表示画像
-    shotResult.src =
-        imagePath;
-
-    // クリックした位置
-    shotResult.style.left =
+    shotFlash.style.left =
         x + "px";
 
-    shotResult.style.top =
+    shotFlash.style.top =
         y + "px";
 
-    shotResult.style.display =
-        "block";
-
-    // アニメーションを再スタート
-    void shotResult.offsetWidth;
-
-    shotResult.classList.add(
+    shotFlash.classList.remove(
         "show"
     );
 
-    // 0.5秒後に非表示
-    resultTimer =
-        setTimeout(
-            function () {
+    void shotFlash.offsetWidth;
 
-                shotResult.classList.remove(
-                    "show"
-                );
-
-                shotResult.style.display =
-                    "none";
-
-            },
-            500
-        );
-}
-
-// ==========================================================
-// 撃たれた風船の飛ぶ方向をゆるやかに決める
-// ==========================================================
-
-function setBalloonFlyDirection(balloon) {
-
-    // 左右どちらへ飛ぶか
-    const direction =
-        Math.random() < 0.5
-            ? -1
-            : 1;
-
-    // 横方向の移動量
-    const flyX =
-        direction *
-        (
-            140 +
-            Math.random() * 120
-        );
-
-    // 上方向の移動量
-    const flyY =
-        -(
-            220 +
-            Math.random() * 140
-        );
-
-    // 回転量
-    const flyRotate =
-        direction *
-        (
-            90 +
-            Math.random() * 120
-        );
-
-    // CSSへ値を渡す
-    balloon.style.setProperty(
-        "--fly-x",
-        flyX + "px"
-    );
-
-    balloon.style.setProperty(
-        "--fly-y",
-        flyY + "px"
-    );
-
-    balloon.style.setProperty(
-        "--fly-rotate",
-        flyRotate + "deg"
-    );
-
-    console.log(
-        "しぼみ飛び演出を設定しました",
-        {
-            風船番号: balloon.dataset.number,
-            横方向: flyX,
-            縦方向: flyY,
-            回転: flyRotate
-        }
+    shotFlash.classList.add(
+        "show"
     );
 }
+
+
 // ==========================================================
-// 風船の種類・画像・点数を新しく設定する
-// ==========================================================
-
-function resetBalloonData(balloon) {
-
-    // 新しい風船を選ぶ
-    const balloonData = getRandomBalloonData();
-
-    // 前のゴールド用クラスを削除
-    balloon.classList.remove("gold");
-
-    // 新しい画像
-    balloon.src = balloonData.image;
-
-    // 新しい点数
-    balloon.dataset.points = balloonData.points;
-
-    // 新しい種類
-    balloon.dataset.type = balloonData.type;
-
-    // ゴールド風船なら専用クラスを追加
-    if (balloonData.type === "gold") {
-        balloon.classList.add("gold");
-    }
-
-    console.log(
-        "風船を再設定しました",
-        {
-            番号: balloon.dataset.number,
-            種類: balloon.dataset.type,
-            点数: balloon.dataset.points
-        }
-    );
-}
-// ==========================================================
-// 風船に当たったとき
+// 命中処理
 // ==========================================================
 
 function handleHit(
     balloon,
-    mouseX,
-    mouseY
+    shotX,
+    shotY
 ) {
 
-    // 風船に設定されている点数を取得
-    const points = Number(
-        balloon.dataset.points
-    );
+    if (
+        balloon.classList.contains(
+            "popping"
+        )
+    ) {
+        return;
+    }
 
-    // ゴールド風船か確認
-    const isGold =
-        balloon.dataset.type === "gold";
-
-    console.log(
-        "HIT",
-        {
-            風船番号: balloon.dataset.number,
-            種類: balloon.dataset.type,
-            獲得点数: points
-        }
-    );
-
-    // HIT音を鳴らす
-    playSound(hitSound);
-
-    // 点数分だけスコアを増やす
-    score += points;
-
-    // スコア表示を更新
-    scoreText.textContent = score;
-
-    // ゴールド風船の場合
-    if (isGold) {
-
-        showRareScore(
-            mouseX,
-            mouseY,
-            points
+    const points =
+        Number(
+            balloon.dataset.points
         );
 
-    } else {
+    const isGold =
+        balloon.dataset.type ===
+        "gold";
 
-        // 通常風船の場合はHIT画像を表示
-        showShotResult(
-            "images/hit.png",
-            mouseX,
-            mouseY
+    playSound(
+        popSound
+    );
+
+    score +=
+        points;
+
+    scoreText.textContent =
+        score;
+
+    playScoreBump();
+
+    showScorePopup(
+        shotX,
+        shotY,
+        points,
+        isGold
+    );
+
+    createConfetti(
+        shotX,
+        shotY,
+        isGold
+    );
+
+    balloon.classList.add(
+        "popping"
+    );
+
+    setTimeout(
+        function () {
+
+            applyBalloonData(
+                balloon,
+                getRandomBalloonData()
+            );
+
+            moveBalloon(
+                balloon
+            );
+
+            balloon.classList.remove(
+                "popping"
+            );
+
+            balloon.style.opacity =
+                "1";
+
+        },
+        500
+    );
+}
+
+
+// ==========================================================
+// スコアを弾ませる
+// ==========================================================
+
+function playScoreBump() {
+
+    scoreText.classList.remove(
+        "bump"
+    );
+
+    void scoreText.offsetWidth;
+
+    scoreText.classList.add(
+        "bump"
+    );
+}
+
+
+// ==========================================================
+// +1・+5表示
+// ==========================================================
+
+function showScorePopup(
+    x,
+    y,
+    points,
+    isGold
+) {
+
+    const popup =
+        document.createElement(
+            "div"
+        );
+
+    popup.classList.add(
+        "score-popup"
+    );
+
+    if (isGold) {
+
+        popup.classList.add(
+            "gold"
         );
     }
 
-    // 飛ぶ方向を先に設定
-    setBalloonFlyDirection(balloon);
+    popup.textContent =
+        "+" + points;
 
-    // しぼみながら飛ぶアニメーション開始
-    balloon.classList.add("hit");
-
-    // アニメーション終了後に新しい風船として再登場
-    setTimeout(
-        function () {
-
-            // 新しい色・種類・点数に変更
-            resetBalloonData(balloon);
-
-            // 新しい位置へ移動
-            moveBalloon(balloon);
-
-            // HIT状態を解除
-            balloon.classList.remove("hit");
-
-            // 透明度を戻す
-            balloon.style.opacity = "1";
-
-        },
-        1400
-    );
-}
-// ==========================================================
-// ⑲ 外したとき
-// ==========================================================
-
-function handleMiss(
-    mouseX,
-    mouseY
-) {
-
-    console.log(
-        "MISS：",
-        "X=" + mouseX,
-        "Y=" + mouseY
-    );
-
-    // MISS音
-    playSound(
-        missSound
-    );
-
-    // MISS画像
-    showShotResult(
-        "images/miss.png",
-        mouseX,
-        mouseY
-    );
-}
-
-// ==========================================================
-// ゴールド風船を当てたときの表示
-// ==========================================================
-
-function showRareScore(
-    x,
-    y,
-    points
-) {
-
-    // 表示用の要素を作る
-    const rareText =
-        document.createElement("div");
-
-    rareText.classList.add("rare-score");
-
-    rareText.innerHTML =
-        "RARE！<br>+" + points;
-
-    rareText.style.left =
+    popup.style.left =
         x + "px";
 
-    rareText.style.top =
+    popup.style.top =
         y + "px";
 
-    game.appendChild(rareText);
-
-    console.log(
-        "レア得点を表示：+" + points
+    game.appendChild(
+        popup
     );
 
-    // アニメーション終了後に削除
     setTimeout(
         function () {
 
-            rareText.remove();
+            popup.remove();
 
         },
         850
     );
 }
 
+
 // ==========================================================
-// ⑳ クリックしたときの射撃処理
+// 紙吹雪
 // ==========================================================
 
-game.addEventListener(
-    "click",
-    function (event) {
+function createConfetti(
+    x,
+    y,
+    isGold
+) {
 
-        // ゲーム中でなければ何もしない
-        if (!playing) {
-            return;
-        }
+    const confettiCount =
+        isGold
+            ? 30
+            : 18;
 
-        // 撃った音
-        playSound(
-            shotSound
+    const normalColors = [
+        "#ff3f3f",
+        "#37a9ff",
+        "#ffe144",
+        "#ff8a2b",
+        "#55d36b",
+        "#ffffff"
+    ];
+
+    const goldColors = [
+        "#ffd000",
+        "#fff38a",
+        "#ffffff",
+        "#ffae00"
+    ];
+
+    const colors =
+        isGold
+            ? goldColors
+            : normalColors;
+
+    for (
+        let index = 0;
+        index < confettiCount;
+        index++
+    ) {
+
+        const piece =
+            document.createElement(
+                "div"
+            );
+
+        piece.classList.add(
+            "confetti"
         );
 
-        // クリックした場所
-        const mouseX =
-            event.clientX;
+        const angle =
+            Math.random() *
+            Math.PI *
+            2;
 
-        const mouseY =
-            event.clientY;
-
-        /*
-            風船の膨らんだ部分に
-            当たったか調べます
-        */
-        const hitBalloon =
-            findHitBalloon(
-                mouseX,
-                mouseY
+        const distance =
+            75 +
+            Math.random() *
+            (
+                isGold
+                    ? 170
+                    : 125
             );
 
-        // 風船本体に当たった場合
-        if (
-            hitBalloon
-        ) {
+        const moveX =
+            Math.cos(angle) *
+            distance;
 
-            handleHit(
-                hitBalloon,
-                mouseX,
-                mouseY
+        const moveY =
+            Math.sin(angle) *
+            distance +
+            50;
+
+        const duration =
+            0.55 +
+            Math.random() *
+            0.45;
+
+        const rotate =
+            (
+                180 +
+                Math.random() *
+                720
+            ) *
+            (
+                Math.random() <
+                0.5
+                    ? -1
+                    : 1
             );
 
-            return;
-        }
+        piece.style.left =
+            x + "px";
 
-        /*
-            ひも、透明部分、背景なら
-            MISSになります
-        */
-        handleMiss(
-            mouseX,
-            mouseY
+        piece.style.top =
+            y + "px";
+
+        piece.style.background =
+            colors[
+                Math.floor(
+                    Math.random() *
+                    colors.length
+                )
+            ];
+
+        piece.style.width =
+            (
+                6 +
+                Math.random() *
+                7
+            ) +
+            "px";
+
+        piece.style.height =
+            (
+                9 +
+                Math.random() *
+                11
+            ) +
+            "px";
+
+        piece.style.setProperty(
+            "--move-x",
+            moveX + "px"
+        );
+
+        piece.style.setProperty(
+            "--move-y",
+            moveY + "px"
+        );
+
+        piece.style.setProperty(
+            "--rotate",
+            rotate + "deg"
+        );
+
+        piece.style.setProperty(
+            "--duration",
+            duration + "s"
+        );
+
+        game.appendChild(
+            piece
+        );
+
+        setTimeout(
+            function () {
+
+                piece.remove();
+
+            },
+            duration *
+            1000 +
+            100
         );
     }
-);
+}
 
 
 // ==========================================================
-// ㉑ ゲーム開始
+// カウントダウン
 // ==========================================================
 
-function startGame() {
+function showCountdownText(
+    text
+) {
 
-    console.log(
-        "ゲームを開始します"
+    return new Promise(
+        function (resolve) {
+
+            countdown.textContent =
+                text;
+
+            countdown.classList.remove(
+                "show"
+            );
+
+            countdown.style.display =
+                "block";
+
+            void countdown.offsetWidth;
+
+            countdown.classList.add(
+                "show"
+            );
+
+            setTimeout(
+                function () {
+
+                    countdown.classList.remove(
+                        "show"
+                    );
+
+                    countdown.style.display =
+                        "none";
+
+                    resolve();
+
+                },
+                760
+            );
+        }
     );
+}
 
-    // 古いタイマーを停止
+
+// ==========================================================
+// ゲーム開始
+// ==========================================================
+
+async function startGame() {
+
+    if (countdownRunning) {
+        return;
+    }
+
     clearInterval(
         gameTimer
     );
 
-    clearTimeout(
-        resultTimer
-    );
+    score =
+        0;
 
-    // 初期値に戻す
-    score = 0;
+    time =
+        GAME_TIME;
 
-    time = GAME_TIME;
+    playing =
+        false;
+
+    countdownRunning =
+        true;
 
     extraBalloonAdded =
         false;
 
-    balloonId = 0;
+    balloonId =
+        0;
 
-    playing = true;
-
-    // 通常カーソルを消す
-    document.body.classList.add(
-        "playing"
-    );
-
-    // 画面表示を更新
     scoreText.textContent =
         score;
 
     timeText.textContent =
         time;
 
-    // 終了画面を隠す
-    message.style.display =
-        "none";
+    timeText.classList.remove(
+        "danger"
+    );
 
     resultOverlay.style.display =
+        "none";
+
+    message.style.display =
         "none";
 
     startButton.style.display =
         "none";
 
-    // HIT・MISSを隠す
-    shotResult.classList.remove(
-        "show"
-    );
-
-    shotResult.style.display =
+    instruction.style.display =
         "none";
 
-    // 照準を表示
-    scope.style.display =
-        "block";
-
-    // 前の風船を削除
     removeAllBalloons();
 
-    // 最初は3個表示
+    await showCountdownText(
+        "3"
+    );
+
+    await showCountdownText(
+        "2"
+    );
+
+    await showCountdownText(
+        "1"
+    );
+
+    await showCountdownText(
+        "スタート！"
+    );
+
     setBalloonCount(
         START_BALLOON_COUNT
     );
 
-    // 1秒ごとのタイマー
+    playing =
+        true;
+
+    countdownRunning =
+        false;
+
+    console.log(
+        "ゲーム開始・発射可能"
+    );
+
     gameTimer =
         setInterval(
             function () {
@@ -1115,15 +1664,15 @@ function startGame() {
                 timeText.textContent =
                     time;
 
-                console.log(
-                    "残り時間：",
-                    time + "秒"
-                );
+                if (
+                    time <= 5
+                ) {
 
-                /*
-                    残り10秒になったら
-                    風船を4個へ増やす
-                */
+                    timeText.classList.add(
+                        "danger"
+                    );
+                }
+
                 if (
                     time ===
                     ADD_BALLOON_TIME &&
@@ -1136,14 +1685,8 @@ function startGame() {
                     setBalloonCount(
                         LAST_BALLOON_COUNT
                     );
-
-                    console.log(
-                        "後半開始：" +
-                        "風船を4個に増やしました"
-                    );
                 }
 
-                // 0秒で終了
                 if (
                     time <= 0
                 ) {
@@ -1158,88 +1701,40 @@ function startGame() {
 
 
 // ==========================================================
-// ㉒ ゲーム終了
+// ゲーム終了
 // ==========================================================
 
 function endGame() {
 
-    console.log(
-        "ゲームを終了します"
-    );
+    playing =
+        false;
 
-    console.log(
-        "最終スコア：",
-        score
-    );
+    countdownRunning =
+        false;
 
-    playing = false;
-
-    // タイマー停止
     clearInterval(
         gameTimer
     );
 
-    clearTimeout(
-        resultTimer
-    );
-
-    // 通常カーソルへ戻す
-    document.body.classList.remove(
-        "playing"
-    );
-
-    // 風船を削除
     removeAllBalloons();
 
-    // 照準を隠す
-    scope.style.display =
-        "none";
-
-    // HIT・MISSを隠す
-    shotResult.classList.remove(
-        "show"
+    timeText.classList.remove(
+        "danger"
     );
 
-    shotResult.style.display =
-        "none";
+    playSound(
+        clearSound
+    );
 
-    // 終了画面を表示
     resultOverlay.style.display =
         "block";
 
-    // クリアした場合
-    if (
-        score >=
-        CLEAR_SCORE
-    ) {
-
-        playSound(
-            clearSound
-        );
-
-        message.innerHTML =
-            "GAME CLEAR！<br>" +
-            "風船をたくさん飛ばしたよ！<br>" +
-            "スコア：" +
-            score;
-    }
-
-    // クリアできなかった場合
-    else {
-
-        const remainingScore =
-            CLEAR_SCORE -
-            score;
-
-        message.innerHTML =
-            "おしい！もう一回！<br>" +
-            "スコア：" +
-            score +
-            "<br>" +
-            "あと" +
-            remainingScore +
-            "個でクリア！";
-    }
+    message.innerHTML =
+        "タイムアップ！<br>" +
+        "スコア<br>" +
+        "<strong>" +
+        score +
+        "点</strong>";
 
     message.style.display =
         "block";
@@ -1253,17 +1748,13 @@ function endGame() {
 
 
 // ==========================================================
-// ㉓ スタートボタン
+// スタートボタン
 // ==========================================================
 
 startButton.addEventListener(
     "click",
     function (event) {
 
-        /*
-            ボタンを押したクリックが
-            ゲーム画面に伝わるのを防ぐ
-        */
         event.stopPropagation();
 
         startGame();
@@ -1272,16 +1763,39 @@ startButton.addEventListener(
 
 
 // ==========================================================
-// ㉔ 画面サイズが変わったとき
+// スペースキーでパソコン側の発射テスト
+// マウスでは発射しません
+// ==========================================================
+
+window.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (
+            event.code ===
+            "Space"
+        ) {
+
+            event.preventDefault();
+
+            shootAt(
+                aimX,
+                aimY
+            );
+        }
+    }
+);
+
+
+// ==========================================================
+// 画面サイズ変更
 // ==========================================================
 
 window.addEventListener(
     "resize",
     function () {
 
-        if (
-            !playing
-        ) {
+        if (!playing) {
             return;
         }
 
@@ -1303,28 +1817,32 @@ window.addEventListener(
 
 
 // ==========================================================
-// ㉕ ページを開いた直後
+// 初期化
 // ==========================================================
 
-// 風船を削除
-removeAllBalloons();
+function initializeGame() {
 
-// 照準を隠す
-scope.style.display =
-    "none";
+    removeAllBalloons();
 
-// HIT・MISS画像を隠す
-shotResult.style.display =
-    "none";
+    resultOverlay.style.display =
+        "none";
 
-// 終了メッセージを隠す
-message.style.display =
-    "none";
+    message.style.display =
+        "none";
 
-// 暗い背景を隠す
-resultOverlay.style.display =
-    "none";
+    countdown.style.display =
+        "none";
 
-console.log(
-    "バルーンシューティングの準備完了"
-);
+    updateScopePosition();
+
+    connectFirebase();
+
+    startCamera();
+
+    console.log(
+        "ゲームの初期化完了"
+    );
+}
+
+
+initializeGame();
