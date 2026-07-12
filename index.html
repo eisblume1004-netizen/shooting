@@ -11,67 +11,115 @@
 
     <title>ジャングルバルーンシューティング</title>
 
-    <!-- CSSを読み込む -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- ArUcoマーカー検出ライブラリ -->
+    <script
+        src="https://rawcdn.githack.com/damianofalcioni/js-aruco2/master/src/cv.js"
+    ></script>
+
+    <script
+        src="https://rawcdn.githack.com/damianofalcioni/js-aruco2/master/src/aruco.js"
+    ></script>
 </head>
 
 <body>
 
-    <!-- ゲーム画面全体 -->
     <main id="game">
 
-        <!-- ゲームタイトル -->
+        <!--
+            カメラ映像は画面には表示しません。
+            ArUcoマーカーを読み取るためだけに使います。
+        -->
+        <video
+            id="camera"
+            autoplay
+            playsinline
+            muted
+        ></video>
+
+        <!-- ArUco検出専用Canvas -->
+        <canvas id="detectCanvas"></canvas>
+
+        <!-- タイトル -->
         <div id="title">
             ジャングルバルーンシューティング
         </div>
 
-        <!-- 残り時間とスコア -->
+        <!-- 時間とスコア -->
         <div id="info">
 
             <div>
-                残り時間：
+                のこり
                 <span id="time">20</span>
-                秒
+                びょう
             </div>
 
             <div>
-                スコア：
+                スコア
                 <span id="score">0</span>
             </div>
 
         </div>
 
-        <!--
-            風船を表示する場所
-            風船本体はJavaScriptで自動的に追加します
-        -->
+        <!-- 遊び方 -->
+        <div id="instruction">
+            風船をねらって発射しよう！
+        </div>
+
+        <!-- 風船を入れる場所 -->
         <div id="balloonArea"></div>
 
-        <!-- マウスについてくる照準 -->
+        <!-- 照準 -->
         <div id="scope"></div>
 
-        <!-- HIT・MISSの画像 -->
-        <img
-            id="shotResult"
-            src=""
-            alt=""
-        >
+        <!-- 発射時の光 -->
+        <div id="shotFlash"></div>
 
-        <!-- ゲーム終了時に画面を暗くする背景 -->
+        <!-- カウントダウン -->
+        <div id="countdown"></div>
+
+        <!-- 接続状況 -->
+        <div id="connectionStatus">
+
+            <div>
+                カメラ：
+                <span id="cameraStatus">待機中</span>
+            </div>
+
+            <div>
+                マーカー：
+                <span id="markerStatus">未検出</span>
+            </div>
+
+            <div>
+                コントローラー：
+                <span id="firebaseStatus">接続中</span>
+            </div>
+
+        </div>
+
+        <!-- 終了時の暗い背景 -->
         <div id="resultOverlay"></div>
 
-        <!-- ゲーム終了メッセージ -->
+        <!-- 終了メッセージ -->
         <div id="message"></div>
 
-        <!-- ゲーム開始・再挑戦ボタン -->
+        <!-- スタートボタン -->
         <button id="startButton">
             ゲームスタート
         </button>
 
     </main>
 
-    <!-- JavaScriptを読み込む -->
-    <script src="script.js"></script>
+    <!--
+        ?v=10はキャッシュ対策です。
+        GitHub Pagesが古いJavaScriptを表示しにくくなります。
+    -->
+    <script
+        type="module"
+        src="script.js?v=10"
+    ></script>
 
 </body>
 
