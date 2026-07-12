@@ -1,4 +1,18 @@
 /* ==================================================
+   ジャングルバルーンシューティング
+   style.css 完成版 ①
+
+   このCSSで使う機能
+   ・ジャングル背景
+   ・タイトル、スコア、残り時間
+   ・風船の表示とふわふわ動作
+   ・割れた画像の表示
+   ・マウス照準
+   ・発射時の光
+================================================== */
+
+
+/* ==================================================
    全体設定
 ================================================== */
 
@@ -28,13 +42,6 @@ body {
 }
 
 
-
-/* スタートボタンだけは押せることが分かるようにする */
-#startButton {
-    cursor: pointer !important;
-}
-
-
 /* ==================================================
    ゲーム画面
 ================================================== */
@@ -48,12 +55,18 @@ body {
     overflow: hidden;
 
     background-color: #286c35;
-    background-image: url("images/background.png");
+    background-image:
+        url("images/background.png");
+
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
 
+    cursor: crosshair;
+
     user-select: none;
+
+    isolation: isolate;
 }
 
 
@@ -62,6 +75,7 @@ body {
     content: "";
 
     position: absolute;
+
     inset: 0;
 
     background:
@@ -86,12 +100,17 @@ body {
     top: 14px;
     left: 50%;
 
-    transform: translateX(-50%);
+    transform:
+        translateX(-50%);
 
-    padding: 10px 30px;
+    padding:
+        10px 30px;
 
-    border: 4px solid white;
-    border-radius: 32px;
+    border:
+        4px solid white;
+
+    border-radius:
+        32px;
 
     background:
         linear-gradient(
@@ -100,19 +119,27 @@ body {
             rgba(255, 226, 121, 0.98)
         );
 
-    color: #71431d;
+    color:
+        #71431d;
 
-    font-size: 28px;
-    font-weight: bold;
+    font-size:
+        28px;
 
-    letter-spacing: 1px;
-    white-space: nowrap;
+    font-weight:
+        bold;
+
+    letter-spacing:
+        1px;
+
+    white-space:
+        nowrap;
 
     box-shadow:
         0 6px 0 rgba(128, 76, 27, 0.55),
         0 11px 22px rgba(0, 0, 0, 0.28);
 
-    z-index: 50;
+    z-index:
+        50;
 }
 
 
@@ -126,69 +153,94 @@ body {
     top: 15px;
     left: 15px;
 
-    min-width: 210px;
+    min-width:
+        210px;
 
-    padding: 13px 19px;
+    padding:
+        13px 19px;
 
-    border: 3px solid white;
-    border-radius: 18px;
+    border:
+        3px solid white;
 
-    background: rgba(24, 78, 39, 0.9);
+    border-radius:
+        18px;
 
-    color: white;
+    background:
+        rgba(24, 78, 39, 0.9);
 
-    font-size: 22px;
-    font-weight: bold;
+    color:
+        white;
 
-    line-height: 1.65;
+    font-size:
+        22px;
+
+    font-weight:
+        bold;
+
+    line-height:
+        1.65;
 
     text-shadow:
-        2px 2px 3px rgba(0, 0, 0, 0.55);
+        2px 2px 3px
+        rgba(0, 0, 0, 0.55);
 
     box-shadow:
-        0 7px 15px rgba(0, 0, 0, 0.3);
+        0 7px 15px
+        rgba(0, 0, 0, 0.3);
 
-    z-index: 55;
+    z-index:
+        55;
 }
 
 
 #time,
 #score {
-    display: inline-block;
+    display:
+        inline-block;
 
-    margin-left: 7px;
+    margin-left:
+        7px;
 
-    color: #ffe768;
+    color:
+        #ffe768;
 
-    font-size: 32px;
+    font-size:
+        32px;
 }
 
 
 /* スコアが増えたとき */
 #score.bump {
-    animation: scoreBump 0.3s ease-out;
+    animation:
+        scoreBump
+        0.3s
+        ease-out;
 }
 
 
 @keyframes scoreBump {
 
     0% {
-        transform: scale(1);
+        transform:
+            scale(1);
     }
 
     45% {
-        transform: scale(1.5);
+        transform:
+            scale(1.5);
     }
 
     100% {
-        transform: scale(1);
+        transform:
+            scale(1);
     }
 }
 
 
-/* 残り5秒 */
+/* 残り5秒の表示 */
 #time.danger {
-    color: #ff6868;
+    color:
+        #ff6868;
 
     animation:
         timePulse
@@ -202,17 +254,19 @@ body {
 
     0%,
     100% {
-        transform: scale(1);
+        transform:
+            scale(1);
     }
 
     50% {
-        transform: scale(1.2);
+        transform:
+            scale(1.2);
     }
 }
 
 
 /* ==================================================
-   説明表示
+   遊び方
 ================================================== */
 
 #instruction {
@@ -221,26 +275,43 @@ body {
     top: 105px;
     left: 50%;
 
-    transform: translateX(-50%);
+    transform:
+        translateX(-50%);
 
-    padding: 9px 23px;
+    padding:
+        9px 23px;
 
-    border: 2px solid rgba(255, 255, 255, 0.8);
-    border-radius: 23px;
+    border:
+        2px solid
+        rgba(255, 255, 255, 0.8);
 
-    background: rgba(0, 0, 0, 0.46);
+    border-radius:
+        23px;
 
-    color: white;
+    background:
+        rgba(0, 0, 0, 0.46);
 
-    font-size: 19px;
-    font-weight: bold;
+    color:
+        white;
 
-    letter-spacing: 1px;
+    font-size:
+        19px;
+
+    font-weight:
+        bold;
+
+    letter-spacing:
+        1px;
 
     text-shadow:
-        1px 2px 3px rgba(0, 0, 0, 0.75);
+        1px 2px 3px
+        rgba(0, 0, 0, 0.75);
 
-    z-index: 40;
+    pointer-events:
+        none;
+
+    z-index:
+        40;
 }
 
 
@@ -249,34 +320,48 @@ body {
 ================================================== */
 
 #balloonArea {
-    position: absolute;
+    position:
+        absolute;
 
-    inset: 0;
+    inset:
+        0;
 
-    pointer-events: none;
+    pointer-events:
+        none;
 
-    z-index: 10;
+    z-index:
+        10;
 }
 
 
 /* ==================================================
-   風船
+   通常の風船
 ================================================== */
 
 .balloon {
-    position: absolute;
+    position:
+        absolute;
 
-    width: 230px;
-    height: 310px;
+    width:
+        230px;
 
-    object-fit: contain;
+    height:
+        310px;
 
-    pointer-events: none;
+    object-fit:
+        contain;
 
-    user-select: none;
-    -webkit-user-drag: none;
+    pointer-events:
+        none;
 
-    transform-origin: center 32%;
+    user-select:
+        none;
+
+    -webkit-user-drag:
+        none;
+
+    transform-origin:
+        center 32%;
 
     filter:
         drop-shadow(
@@ -288,6 +373,7 @@ body {
         balloonAppear
         0.34s
         ease-out,
+
         balloonFloat
         2.2s
         ease-in-out
@@ -298,15 +384,20 @@ body {
         transform,
         opacity;
 
-    z-index: 12;
+    z-index:
+        12;
 }
 
 
-/* 風船の出現演出 */
+/* ==================================================
+   風船が出現するとき
+================================================== */
+
 @keyframes balloonAppear {
 
     0% {
-        opacity: 0;
+        opacity:
+            0;
 
         transform:
             scale(0.45)
@@ -314,7 +405,8 @@ body {
     }
 
     70% {
-        opacity: 1;
+        opacity:
+            1;
 
         transform:
             scale(1.08)
@@ -322,7 +414,8 @@ body {
     }
 
     100% {
-        opacity: 1;
+        opacity:
+            1;
 
         transform:
             scale(1)
@@ -331,7 +424,10 @@ body {
 }
 
 
-/* 風船がふわふわ動く */
+/* ==================================================
+   風船がふわふわ動く
+================================================== */
+
 @keyframes balloonFloat {
 
     0%,
@@ -350,6 +446,7 @@ body {
 
 
 /* 風船ごとに動くタイミングをずらす */
+
 .balloon:nth-child(2) {
     animation-delay:
         0s,
@@ -368,52 +465,63 @@ body {
         -1.65s;
 }
 
+
 /* ==================================================
-   撃たれた風船
+   命中して割れた風船
 ================================================== */
 
 .balloon.popping {
     animation:
         balloonBurst
-        0.5s
+        0.55s
         ease-out
-        forwards !important;
+        forwards
+        !important;
 
-    pointer-events: none;
+    pointer-events:
+        none;
 }
 
 
-/* 割れた画像を一瞬大きくしてから消す */
+/* 割れた画像を一瞬大きくして消す */
 @keyframes balloonBurst {
 
     0% {
-        opacity: 1;
+        opacity:
+            1;
 
         transform:
             scale(0.85);
     }
 
-    35% {
-        opacity: 1;
+    25% {
+        opacity:
+            1;
 
         transform:
-            scale(1.2);
+            scale(1.28)
+            rotate(-4deg);
     }
 
-    75% {
-        opacity: 1;
+    55% {
+        opacity:
+            1;
 
         transform:
-            scale(1.05);
+            scale(1.12)
+            rotate(3deg);
     }
 
     100% {
-        opacity: 0;
+        opacity:
+            0;
 
         transform:
-            scale(1.35);
+            scale(1.55)
+            rotate(8deg);
     }
 }
+
 
 /* ==================================================
    ゴールド風船
@@ -421,33 +529,37 @@ body {
 
 .balloon.gold {
     filter:
-        drop-shadow(0 0 9px #fff7a0)
-        drop-shadow(0 0 20px #ffd000)
-        drop-shadow(0 9px 7px rgba(0, 0, 0, 0.3));
+        drop-shadow(
+            0 0 9px
+            #fff7a0
+        )
+
+        drop-shadow(
+            0 0 20px
+            #ffd000
+        )
+
+        drop-shadow(
+            0 9px 7px
+            rgba(0, 0, 0, 0.3)
+        );
 
     animation:
         balloonAppear
         0.34s
         ease-out,
+
         goldFloat
         1.65s
         ease-in-out
         0.34s
         infinite,
+
         goldGlow
         0.85s
         ease-in-out
         infinite
         alternate;
-}
-
-
-.balloon.gold.popping {
-    animation:
-        goldBalloonPop
-        0.48s
-        cubic-bezier(0.18, 0.82, 0.32, 1)
-        forwards !important;
 }
 
 
@@ -472,43 +584,93 @@ body {
 
     from {
         filter:
-            drop-shadow(0 0 7px #fff3a0)
-            drop-shadow(0 0 14px #ffd000)
-            drop-shadow(0 9px 7px rgba(0, 0, 0, 0.3));
+            drop-shadow(
+                0 0 7px
+                #fff3a0
+            )
+
+            drop-shadow(
+                0 0 14px
+                #ffd000
+            )
+
+            drop-shadow(
+                0 9px 7px
+                rgba(0, 0, 0, 0.3)
+            );
     }
 
     to {
         filter:
-            drop-shadow(0 0 16px white)
-            drop-shadow(0 0 31px #ffd000)
-            drop-shadow(0 9px 7px rgba(0, 0, 0, 0.3));
+            drop-shadow(
+                0 0 16px
+                white
+            )
+
+            drop-shadow(
+                0 0 31px
+                #ffd000
+            )
+
+            drop-shadow(
+                0 9px 7px
+                rgba(0, 0, 0, 0.3)
+            );
     }
 }
 
 
-@keyframes goldBalloonPop {
+/* ゴールド風船が割れたとき */
+.balloon.gold.popping {
+    animation:
+        goldBalloonBurst
+        0.65s
+        cubic-bezier(
+            0.18,
+            0.82,
+            0.32,
+            1
+        )
+        forwards
+        !important;
+}
+
+
+@keyframes goldBalloonBurst {
 
     0% {
-        opacity: 1;
-
-        transform: scale(1);
-    }
-
-    30% {
-        opacity: 1;
+        opacity:
+            1;
 
         transform:
-            scale(1.3)
-            rotate(-3deg);
+            scale(0.85);
+    }
+
+    25% {
+        opacity:
+            1;
+
+        transform:
+            scale(1.45)
+            rotate(-7deg);
+    }
+
+    55% {
+        opacity:
+            1;
+
+        transform:
+            scale(1.2)
+            rotate(6deg);
     }
 
     100% {
-        opacity: 0;
+        opacity:
+            0;
 
         transform:
-            scaleX(1.8)
-            scaleY(0.12)
-            rotate(11deg);
+            scale(1.85)
+            rotate(12deg);
     }
 }
 
@@ -518,25 +680,41 @@ body {
 ================================================== */
 
 #scope {
-    position: absolute;
+    position:
+        absolute;
 
-    width: 150px;
-    height: 150px;
+    width:
+        150px;
 
-    left: 50%;
-    top: 50%;
+    height:
+        150px;
+
+    left:
+        50%;
+
+    top:
+        50%;
 
     transform:
         translate(-50%, -50%);
 
-    background-image: url("images/scope.png");
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-image:
+        url("images/scope.png");
 
-    pointer-events: none;
+    background-size:
+        contain;
 
-    opacity: 0.35;
+    background-position:
+        center;
+
+    background-repeat:
+        no-repeat;
+
+    pointer-events:
+        none;
+
+    opacity:
+        1;
 
     filter:
         drop-shadow(
@@ -544,24 +722,16 @@ body {
             rgba(0, 0, 0, 0.55)
         );
 
-    transition:
-        opacity 0.15s ease;
-
-    z-index: 100;
+    z-index:
+        1000;
 }
 
 
-/* マーカー検出中 */
-#scope.detected {
-    opacity: 1;
-}
-
-
-/* 発射時 */
+/* 照準の発射アニメーション */
 #scope.shooting {
     animation:
         scopeShoot
-        0.17s
+        0.18s
         ease-out;
 }
 
@@ -593,41 +763,52 @@ body {
 ================================================== */
 
 #shotFlash {
-    position: absolute;
+    position:
+        absolute;
 
-    width: 50px;
-    height: 50px;
+    width:
+        55px;
 
-    left: 50%;
-    top: 50%;
+    height:
+        55px;
 
-    border-radius: 50%;
+    left:
+        50%;
+
+    top:
+        50%;
+
+    border-radius:
+        50%;
 
     background:
         radial-gradient(
             circle,
             rgba(255, 255, 255, 1) 0%,
-            rgba(255, 230, 100, 0.9) 25%,
-            rgba(255, 150, 0, 0.3) 65%,
+            rgba(255, 230, 100, 0.95) 25%,
+            rgba(255, 150, 0, 0.35) 65%,
             rgba(255, 150, 0, 0) 100%
         );
 
-    opacity: 0;
+    opacity:
+        0;
 
     transform:
         translate(-50%, -50%)
         scale(0.3);
 
-    pointer-events: none;
+    pointer-events:
+        none;
 
-    z-index: 98;
+    z-index:
+        990;
 }
 
 
 #shotFlash.show {
     animation:
         shotFlashAnimation
-        0.18s
+        0.2s
         ease-out;
 }
 
@@ -635,7 +816,8 @@ body {
 @keyframes shotFlashAnimation {
 
     0% {
-        opacity: 1;
+        opacity:
+            1;
 
         transform:
             translate(-50%, -50%)
@@ -643,62 +825,80 @@ body {
     }
 
     100% {
-        opacity: 0;
+        opacity:
+            0;
 
         transform:
             translate(-50%, -50%)
-            scale(2.3);
+            scale(2.7);
     }
 }
-
-
 /* ==================================================
    点数表示
 ================================================== */
 
 .score-popup {
-    position: absolute;
+    position:
+        absolute;
 
     transform:
         translate(-50%, -50%);
 
-    color: white;
+    color:
+        white;
 
-    font-size: 38px;
-    font-weight: bold;
+    font-size:
+        42px;
+
+    font-weight:
+        bold;
 
     text-shadow:
-        0 3px 3px rgba(0, 0, 0, 0.55),
-        0 0 7px rgba(255, 255, 255, 0.9);
+        0 3px 3px
+        rgba(0, 0, 0, 0.55),
 
-    pointer-events: none;
+        0 0 8px
+        rgba(255, 255, 255, 0.95);
 
-    z-index: 120;
+    pointer-events:
+        none;
+
+    z-index:
+        5000;
 
     animation:
         scorePopup
-        0.82s
+        0.85s
         ease-out
         forwards;
 }
 
 
+/* ゴールド風船の点数表示 */
 .score-popup.gold {
-    color: #fff38b;
+    color:
+        #fff38b;
 
-    font-size: 50px;
+    font-size:
+        56px;
 
     text-shadow:
-        0 0 5px white,
-        0 0 14px #ffd000,
-        0 4px 3px #8a5800;
+        0 0 5px
+        white,
+
+        0 0 16px
+        #ffd000,
+
+        0 4px 3px
+        #8a5800;
 }
 
 
 @keyframes scorePopup {
 
     0% {
-        opacity: 0;
+        opacity:
+            0;
 
         transform:
             translate(-50%, -35%)
@@ -706,19 +906,21 @@ body {
     }
 
     30% {
-        opacity: 1;
+        opacity:
+            1;
 
         transform:
-            translate(-50%, -55%)
-            scale(1.25);
+            translate(-50%, -60%)
+            scale(1.35);
     }
 
     100% {
-        opacity: 0;
+        opacity:
+            0;
 
         transform:
-            translate(-50%, -150%)
-            scale(0.88);
+            translate(-50%, -170%)
+            scale(0.9);
     }
 }
 
@@ -728,21 +930,37 @@ body {
 ================================================== */
 
 .confetti {
-    position: absolute;
+    position:
+        absolute;
 
-    width: 10px;
-    height: 16px;
+    width:
+        13px;
 
-    border-radius: 2px;
+    height:
+        20px;
 
-    pointer-events: none;
+    border-radius:
+        3px;
 
-    z-index: 115;
+    pointer-events:
+        none;
+
+    z-index:
+        5100;
+
+    box-shadow:
+        0 0 5px
+        rgba(255, 255, 255, 0.8);
 
     animation:
         confettiBurst
         var(--duration)
-        cubic-bezier(0.15, 0.68, 0.24, 1)
+        cubic-bezier(
+            0.15,
+            0.68,
+            0.24,
+            1
+        )
         forwards;
 }
 
@@ -750,17 +968,24 @@ body {
 @keyframes confettiBurst {
 
     0% {
-        opacity: 1;
+        opacity:
+            1;
 
         transform:
             translate(-50%, -50%)
             translate3d(0, 0, 0)
             rotate(0deg)
-            scale(1);
+            scale(1.35);
+    }
+
+    30% {
+        opacity:
+            1;
     }
 
     100% {
-        opacity: 0;
+        opacity:
+            0;
 
         transform:
             translate(-50%, -50%)
@@ -769,46 +994,573 @@ body {
                 var(--move-y),
                 0
             )
-            rotate(var(--rotate))
-            scale(0.65);
+            rotate(
+                var(--rotate)
+            )
+            scale(0.4);
     }
 }
 
 
 /* ==================================================
-   カウントダウン
+   豪華な破裂エフェクト
 ================================================== */
 
-#countdown {
-    position: absolute;
 
-    left: 50%;
-    top: 50%;
+/* --------------------------------------------------
+   中央の強い光
+-------------------------------------------------- */
+
+.burst-flash {
+    position:
+        absolute;
+
+    width:
+        170px;
+
+    height:
+        170px;
+
+    border-radius:
+        50%;
 
     transform:
         translate(-50%, -50%);
 
-    color: white;
+    background:
+        radial-gradient(
+            circle,
+            white 0%,
+            rgba(255, 255, 170, 1) 18%,
+            rgba(255, 180, 60, 0.9) 42%,
+            rgba(255, 90, 20, 0.5) 63%,
+            rgba(255, 80, 20, 0) 80%
+        );
 
-    font-size: 140px;
-    font-weight: bold;
+    pointer-events:
+        none;
 
-    text-align: center;
+    z-index:
+        5200;
 
-    text-shadow:
-        0 7px 0 rgba(62, 93, 25, 0.85),
-        0 0 20px rgba(255, 255, 255, 0.85);
+    mix-blend-mode:
+        screen;
 
-    pointer-events: none;
-
-    display: none;
-
-    z-index: 160;
+    animation:
+        burstFlashAnimation
+        0.6s
+        ease-out
+        forwards;
 }
 
 
+/* ゴールド風船の強い光 */
+.burst-flash.gold {
+    width:
+        240px;
+
+    height:
+        240px;
+
+    background:
+        radial-gradient(
+            circle,
+            white 0%,
+            #fffbd1 15%,
+            #fff27c 30%,
+            rgba(255, 208, 0, 0.95) 52%,
+            rgba(255, 145, 0, 0) 82%
+        );
+
+    box-shadow:
+        0 0 30px
+        white,
+
+        0 0 60px
+        #ffd000;
+}
+
+
+@keyframes burstFlashAnimation {
+
+    0% {
+        opacity:
+            1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(0.15);
+    }
+
+    45% {
+        opacity:
+            1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.6);
+    }
+
+    100% {
+        opacity:
+            0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(2.8);
+    }
+}
+
+
+/* --------------------------------------------------
+   外側へ広がる白い衝撃波
+-------------------------------------------------- */
+
+.burst-shockwave {
+    position:
+        absolute;
+
+    width:
+        90px;
+
+    height:
+        90px;
+
+    border:
+        10px solid
+        rgba(255, 255, 255, 0.98);
+
+    border-radius:
+        50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    pointer-events:
+        none;
+
+    z-index:
+        5190;
+
+    box-shadow:
+        0 0 15px
+        rgba(255, 255, 255, 0.95);
+
+    animation:
+        burstShockwaveAnimation
+        0.72s
+        ease-out
+        forwards;
+}
+
+
+/* ゴールド風船の衝撃波 */
+.burst-shockwave.gold {
+    border-color:
+        #fff17a;
+
+    box-shadow:
+        0 0 18px
+        white,
+
+        0 0 45px
+        #ffd000;
+}
+
+
+@keyframes burstShockwaveAnimation {
+
+    0% {
+        opacity:
+            1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(0.2);
+    }
+
+    100% {
+        opacity:
+            0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(5.2);
+    }
+}
+
+
+/* --------------------------------------------------
+   飛び散る星
+-------------------------------------------------- */
+
+.burst-star {
+    position:
+        absolute;
+
+    width:
+        20px;
+
+    height:
+        20px;
+
+    background:
+        linear-gradient(
+            135deg,
+            white,
+            #ffdf68,
+            #ff9c00
+        );
+
+    transform:
+        translate(-50%, -50%)
+        rotate(45deg);
+
+    box-shadow:
+        0 0 9px
+        white,
+
+        0 0 18px
+        #ff8a00;
+
+    pointer-events:
+        none;
+
+    z-index:
+        5210;
+
+    animation:
+        burstStarAnimation
+        0.85s
+        cubic-bezier(
+            0.12,
+            0.75,
+            0.28,
+            1
+        )
+        forwards;
+}
+
+
+/* 星らしい形にする */
+.burst-star::before,
+.burst-star::after {
+    content:
+        "";
+
+    position:
+        absolute;
+
+    inset:
+        0;
+
+    background:
+        inherit;
+
+    box-shadow:
+        inherit;
+}
+
+
+.burst-star::before {
+    transform:
+        rotate(30deg);
+}
+
+
+.burst-star::after {
+    transform:
+        rotate(60deg);
+}
+
+
+/* ゴールド風船の星 */
+.burst-star.gold {
+    width:
+        26px;
+
+    height:
+        26px;
+
+    background:
+        linear-gradient(
+            135deg,
+            white,
+            #fff9ae,
+            #ffd000,
+            #ff9800
+        );
+
+    box-shadow:
+        0 0 12px
+        white,
+
+        0 0 27px
+        #ffd000;
+}
+
+
+@keyframes burstStarAnimation {
+
+    0% {
+        opacity:
+            1;
+
+        transform:
+            translate(-50%, -50%)
+            translate(0, 0)
+            rotate(0deg)
+            scale(0.3);
+    }
+
+    25% {
+        opacity:
+            1;
+
+        transform:
+            translate(-50%, -50%)
+            translate(0, 0)
+            rotate(90deg)
+            scale(1.6);
+    }
+
+    100% {
+        opacity:
+            0;
+
+        transform:
+            translate(-50%, -50%)
+            translate(
+                var(--burst-x),
+                var(--burst-y)
+            )
+            rotate(
+                var(--burst-rotate)
+            )
+            scale(0.2);
+    }
+}
+
+
+/* ==================================================
+   追加のキラキラ粒
+================================================== */
+
+.sparkle {
+    position:
+        absolute;
+
+    width:
+        8px;
+
+    height:
+        8px;
+
+    border-radius:
+        50%;
+
+    background:
+        white;
+
+    box-shadow:
+        0 0 8px
+        white,
+
+        0 0 16px
+        #ffd34d;
+
+    pointer-events:
+        none;
+
+    z-index:
+        5220;
+
+    animation:
+        sparkleBurst
+        0.75s
+        ease-out
+        forwards;
+}
+
+
+@keyframes sparkleBurst {
+
+    0% {
+        opacity:
+            1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.3);
+    }
+
+    100% {
+        opacity:
+            0;
+
+        transform:
+            translate(-50%, -50%)
+            translate(
+                var(--sparkle-x),
+                var(--sparkle-y)
+            )
+            scale(0.1);
+    }
+}
+
+
+/* ==================================================
+   画面揺れ
+================================================== */
+
+
+/* 通常風船 */
+#game.screen-shake {
+    animation:
+        screenShake
+        0.28s
+        linear;
+}
+
+
+@keyframes screenShake {
+
+    0% {
+        transform:
+            translate(0, 0);
+    }
+
+    20% {
+        transform:
+            translate(-6px, 4px);
+    }
+
+    40% {
+        transform:
+            translate(6px, -4px);
+    }
+
+    60% {
+        transform:
+            translate(-4px, -3px);
+    }
+
+    80% {
+        transform:
+            translate(4px, 3px);
+    }
+
+    100% {
+        transform:
+            translate(0, 0);
+    }
+}
+
+
+/* ゴールド風船 */
+#game.screen-shake-gold {
+    animation:
+        screenShakeGold
+        0.45s
+        linear;
+}
+
+
+@keyframes screenShakeGold {
+
+    0% {
+        transform:
+            translate(0, 0)
+            scale(1);
+    }
+
+    15% {
+        transform:
+            translate(-11px, 7px)
+            scale(1.006);
+    }
+
+    30% {
+        transform:
+            translate(10px, -8px)
+            scale(1.004);
+    }
+
+    45% {
+        transform:
+            translate(-9px, -5px)
+            scale(1.008);
+    }
+
+    60% {
+        transform:
+            translate(8px, 6px)
+            scale(1.003);
+    }
+
+    75% {
+        transform:
+            translate(-5px, 3px)
+            scale(1.002);
+    }
+
+    100% {
+        transform:
+            translate(0, 0)
+            scale(1);
+    }
+}
+/* ==================================================
+   カウントダウン
+================================================== */
+
+#countdown {
+    position:
+        absolute;
+
+    left:
+        50%;
+
+    top:
+        50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    color:
+        white;
+
+    font-size:
+        140px;
+
+    font-weight:
+        bold;
+
+    text-align:
+        center;
+
+    text-shadow:
+        0 7px 0
+        rgba(62, 93, 25, 0.85),
+
+        0 0 20px
+        rgba(255, 255, 255, 0.85);
+
+    pointer-events:
+        none;
+
+    display:
+        none;
+
+    z-index:
+        7000;
+}
+
+
+/* JavaScriptでshowクラスが付いたとき */
 #countdown.show {
-    display: block;
+    display:
+        block;
 
     animation:
         countdownPop
@@ -820,7 +1572,8 @@ body {
 @keyframes countdownPop {
 
     0% {
-        opacity: 0;
+        opacity:
+            0;
 
         transform:
             translate(-50%, -50%)
@@ -828,7 +1581,8 @@ body {
     }
 
     35% {
-        opacity: 1;
+        opacity:
+            1;
 
         transform:
             translate(-50%, -50%)
@@ -836,7 +1590,8 @@ body {
     }
 
     100% {
-        opacity: 0;
+        opacity:
+            0;
 
         transform:
             translate(-50%, -50%)
@@ -847,54 +1602,53 @@ body {
 
 /* ==================================================
    接続状況
+   今回はマウス操作版なので非表示
 ================================================== */
 
 #connectionStatus {
-    position: absolute;
-
-    right: 14px;
-    bottom: 14px;
-
-    padding: 9px 13px;
-
-    border: 2px solid rgba(255, 255, 255, 0.8);
-    border-radius: 12px;
-
-    background: rgba(0, 0, 0, 0.6);
-
-    color: white;
-
-    font-size: 13px;
-    line-height: 1.5;
-
-    pointer-events: none;
-
-    z-index: 45;
+    display:
+        none;
 }
 
 
 /* ==================================================
-   結果画面
+   ゲーム終了時の暗い背景
 ================================================== */
 
 #resultOverlay {
-    position: absolute;
+    position:
+        absolute;
 
-    inset: 0;
+    inset:
+        0;
 
-    background: rgba(0, 0, 0, 0.56);
+    background:
+        rgba(0, 0, 0, 0.58);
 
-    display: none;
+    display:
+        none;
 
-    z-index: 130;
+    pointer-events:
+        none;
+
+    z-index:
+        8000;
 }
 
 
-#message {
-    position: absolute;
+/* ==================================================
+   ゲーム終了メッセージ
+================================================== */
 
-    top: 43%;
-    left: 50%;
+#message {
+    position:
+        absolute;
+
+    top:
+        43%;
+
+    left:
+        50%;
 
     transform:
         translate(-50%, -50%);
@@ -902,10 +1656,14 @@ body {
     width:
         min(88%, 610px);
 
-    padding: 30px;
+    padding:
+        30px;
 
-    border: 5px solid white;
-    border-radius: 28px;
+    border:
+        5px solid white;
+
+    border-radius:
+        28px;
 
     background:
         linear-gradient(
@@ -914,24 +1672,40 @@ body {
             #ffc754
         );
 
-    color: #6d421f;
+    color:
+        #6d421f;
 
-    font-size: 39px;
-    font-weight: bold;
+    font-size:
+        39px;
 
-    text-align: center;
-    line-height: 1.55;
+    font-weight:
+        bold;
+
+    text-align:
+        center;
+
+    line-height:
+        1.55;
 
     text-shadow:
-        1px 1px 0 white;
+        1px 1px 0
+        white;
 
     box-shadow:
-        0 9px 0 #a95e1e,
-        0 18px 28px rgba(0, 0, 0, 0.4);
+        0 9px 0
+        #a95e1e,
 
-    display: none;
+        0 18px 28px
+        rgba(0, 0, 0, 0.4);
 
-    z-index: 145;
+    display:
+        none;
+
+    pointer-events:
+        none;
+
+    z-index:
+        8100;
 }
 
 
@@ -940,20 +1714,29 @@ body {
 ================================================== */
 
 #startButton {
-    position: absolute;
+    position:
+        absolute;
 
-    top: 64%;
-    left: 50%;
+    top:
+        64%;
+
+    left:
+        50%;
 
     transform:
         translate(-50%, -50%);
 
-    min-width: 300px;
+    min-width:
+        300px;
 
-    padding: 18px 40px;
+    padding:
+        18px 40px;
 
-    border: 5px solid white;
-    border-radius: 42px;
+    border:
+        5px solid white;
+
+    border-radius:
+        42px;
 
     background:
         linear-gradient(
@@ -962,22 +1745,34 @@ body {
             #ee6d1e
         );
 
-    color: white;
+    color:
+        white;
 
-    font-size: 29px;
-    font-weight: bold;
+    font-size:
+        29px;
 
-    letter-spacing: 1px;
+    font-weight:
+        bold;
+
+    letter-spacing:
+        1px;
 
     text-shadow:
         2px 2px 2px
         rgba(100, 45, 10, 0.48);
 
     box-shadow:
-        0 8px 0 #a54814,
-        0 14px 23px rgba(0, 0, 0, 0.34);
+        0 8px 0
+        #a54814,
 
-    z-index: 150;
+        0 14px 23px
+        rgba(0, 0, 0, 0.34);
+
+    cursor:
+        pointer;
+
+    z-index:
+        8200;
 
     transition:
         transform 0.15s ease,
@@ -998,8 +1793,30 @@ body {
         scale(0.98);
 
     box-shadow:
-        0 4px 0 #a54814,
-        0 8px 13px rgba(0, 0, 0, 0.27);
+        0 4px 0
+        #a54814,
+
+        0 8px 13px
+        rgba(0, 0, 0, 0.27);
+}
+
+
+/* ==================================================
+   クリックを邪魔しないための設定
+================================================== */
+
+#scope,
+#shotFlash,
+#balloonArea,
+.balloon,
+.score-popup,
+.confetti,
+.burst-flash,
+.burst-shockwave,
+.burst-star,
+.sparkle {
+    pointer-events:
+        none;
 }
 
 
@@ -1010,396 +1827,256 @@ body {
 @media (max-width: 850px) {
 
     #title {
-        top: 10px;
+        top:
+            10px;
 
-        padding: 8px 18px;
+        padding:
+            8px 18px;
 
-        font-size: 19px;
+        font-size:
+            19px;
     }
+
 
     #info {
-        top: 70px;
-        left: 10px;
+        top:
+            70px;
 
-        min-width: 170px;
+        left:
+            10px;
 
-        padding: 9px 13px;
+        min-width:
+            170px;
 
-        font-size: 17px;
+        padding:
+            9px 13px;
+
+        font-size:
+            17px;
     }
+
 
     #time,
     #score {
-        font-size: 23px;
+        font-size:
+            23px;
     }
+
 
     #instruction {
-        top: 145px;
+        top:
+            145px;
 
-        font-size: 15px;
+        font-size:
+            15px;
     }
+
 
     .balloon {
-        width: 170px;
-        height: 230px;
+        width:
+            170px;
+
+        height:
+            230px;
     }
+
 
     #scope {
-        width: 115px;
-        height: 115px;
+        width:
+            115px;
+
+        height:
+            115px;
     }
+
 
     #countdown {
-        font-size: 100px;
+        font-size:
+            100px;
     }
+
 
     #message {
-        font-size: 28px;
+        width:
+            min(90%, 500px);
+
+        padding:
+            22px;
+
+        font-size:
+            28px;
     }
+
 
     #startButton {
-        min-width: 235px;
+        min-width:
+            235px;
 
-        font-size: 23px;
+        padding:
+            15px 28px;
+
+        font-size:
+            23px;
+    }
+
+
+    .burst-flash {
+        width:
+            135px;
+
+        height:
+            135px;
+    }
+
+
+    .burst-flash.gold {
+        width:
+            190px;
+
+        height:
+            190px;
+    }
+
+
+    .burst-shockwave {
+        width:
+            70px;
+
+        height:
+            70px;
+    }
+
+
+    .burst-star {
+        width:
+            16px;
+
+        height:
+            16px;
+    }
+
+
+    .burst-star.gold {
+        width:
+            21px;
+
+        height:
+            21px;
     }
 }
+
 
 /* ==================================================
-   マウス操作用設定
+   とても小さい画面
 ================================================== */
 
-/* ゲーム画面では通常のマウスカーソルを表示 */
-#game {
-    cursor: crosshair;
+@media (max-width: 520px) {
+
+    #title {
+        max-width:
+            92%;
+
+        overflow:
+            hidden;
+
+        text-overflow:
+            ellipsis;
+
+        font-size:
+            16px;
+    }
+
+
+    #info {
+        top:
+            62px;
+
+        min-width:
+            145px;
+
+        font-size:
+            14px;
+    }
+
+
+    #time,
+    #score {
+        font-size:
+            20px;
+    }
+
+
+    #instruction {
+        top:
+            132px;
+
+        max-width:
+            92%;
+
+        font-size:
+            13px;
+
+        text-align:
+            center;
+    }
+
+
+    .balloon {
+        width:
+            140px;
+
+        height:
+            190px;
+    }
+
+
+    #scope {
+        width:
+            95px;
+
+        height:
+            95px;
+    }
+
+
+    #countdown {
+        font-size:
+            78px;
+    }
+
+
+    #message {
+        font-size:
+            23px;
+    }
+
+
+    #startButton {
+        min-width:
+            210px;
+
+        font-size:
+            20px;
+    }
 }
 
-/* スタートボタンでは指のカーソル */
-#startButton {
-    cursor: pointer;
-}
-
-/* 照準や風船がクリックを邪魔しないようにする */
-#scope,
-#shotFlash,
-#balloonArea,
-.balloon {
-    pointer-events: none;
-}
-
-/* マウス操作中は照準を常にはっきり表示 */
-#scope {
-    opacity: 1;
-}
-
-/* 接続状況は使用しない */
-#connectionStatus {
-    display: none;
-}
 
 /* ==================================================
-   豪華な風船破裂エフェクト
+   動きを減らす設定を使っている端末への対応
 ================================================== */
 
-/* 中央の強い光 */
-.burst-flash {
-    position: absolute;
-
-    width: 120px;
-    height: 120px;
-
-    border-radius: 50%;
-
-    transform:
-        translate(-50%, -50%);
-
-    background:
-        radial-gradient(
-            circle,
-            white 0%,
-            rgba(255, 255, 160, 0.95) 20%,
-            rgba(255, 145, 40, 0.7) 48%,
-            rgba(255, 80, 20, 0) 76%
-        );
-
-    pointer-events: none;
-
-    z-index: 135;
-
-    animation:
-        burstFlashAnimation
-        0.55s
-        ease-out
-        forwards;
-}
-
-.burst-flash.gold {
-    width: 190px;
-    height: 190px;
-
-    background:
-        radial-gradient(
-            circle,
-            white 0%,
-            #fff7a0 20%,
-            rgba(255, 208, 0, 0.95) 45%,
-            rgba(255, 145, 0, 0) 78%
-        );
-}
-
-@keyframes burstFlashAnimation {
-
-    0% {
-        opacity: 1;
-
-        transform:
-            translate(-50%, -50%)
-            scale(0.2);
-    }
-
-    45% {
-        opacity: 1;
-
-        transform:
-            translate(-50%, -50%)
-            scale(1.5);
-    }
-
-    100% {
-        opacity: 0;
-
-        transform:
-            translate(-50%, -50%)
-            scale(2.4);
-    }
-}
-
-
-/* 外側へ広がる衝撃波 */
-.burst-shockwave {
-    position: absolute;
-
-    width: 80px;
-    height: 80px;
-
-    border:
-        9px solid
-        rgba(255, 255, 255, 0.95);
-
-    border-radius: 50%;
-
-    transform:
-        translate(-50%, -50%);
-
-    pointer-events: none;
-
-    z-index: 132;
-
-    animation:
-        burstShockwaveAnimation
-        0.7s
-        ease-out
-        forwards;
-}
-
-.burst-shockwave.gold {
-    border-color:
-        #fff17a;
-
-    box-shadow:
-        0 0 18px white,
-        0 0 38px #ffd000;
-}
-
-@keyframes burstShockwaveAnimation {
-
-    0% {
-        opacity: 1;
-
-        transform:
-            translate(-50%, -50%)
-            scale(0.25);
-    }
-
-    100% {
-        opacity: 0;
-
-        transform:
-            translate(-50%, -50%)
-            scale(5);
-    }
-}
-
-
-/* 飛び散る星 */
-.burst-star {
-    position: absolute;
-
-    width: 17px;
-    height: 17px;
-
-    background:
-        linear-gradient(
-            135deg,
-            white,
-            #ffcf3b
-        );
-
-    transform:
-        translate(-50%, -50%)
-        rotate(45deg);
-
-    box-shadow:
-        0 0 8px white,
-        0 0 15px #ff8a00;
-
-    pointer-events: none;
-
-    z-index: 138;
-
-    animation:
-        burstStarAnimation
-        0.82s
-        cubic-bezier(
-            0.12,
-            0.75,
-            0.28,
-            1
-        )
-        forwards;
-}
-
-.burst-star.gold {
-    width: 23px;
-    height: 23px;
-
-    background:
-        linear-gradient(
-            135deg,
-            white,
-            #fff17a,
-            #ffb000
-        );
-
-    box-shadow:
-        0 0 12px white,
-        0 0 25px #ffd000;
-}
-
-@keyframes burstStarAnimation {
-
-    0% {
-        opacity: 1;
-
-        transform:
-            translate(-50%, -50%)
-            translate(0, 0)
-            rotate(0deg)
-            scale(0.3);
-    }
-
-    40% {
-        opacity: 1;
-
-        transform:
-            translate(-50%, -50%)
-            translate(
-                calc(var(--burst-x) * 0.5),
-                calc(var(--burst-y) * 0.5)
-            )
-            rotate(
-                calc(var(--burst-rotate) * 0.5)
-            )
-            scale(1.4);
-    }
-
-    100% {
-        opacity: 0;
-
-        transform:
-            translate(-50%, -50%)
-            translate(
-                var(--burst-x),
-                var(--burst-y)
-            )
-            rotate(
-                var(--burst-rotate)
-            )
-            scale(0.2);
-    }
-}
-
-
-/* 通常風船の画面揺れ */
-#game.screen-shake {
-    animation:
-        screenShake
-        0.25s
-        linear;
-}
-
-@keyframes screenShake {
-
-    0% {
-        transform: translate(0, 0);
-    }
-
-    20% {
-        transform: translate(-5px, 3px);
-    }
-
-    40% {
-        transform: translate(5px, -3px);
-    }
-
-    60% {
-        transform: translate(-3px, -2px);
-    }
-
-    80% {
-        transform: translate(3px, 2px);
-    }
-
-    100% {
-        transform: translate(0, 0);
-    }
-}
-
-
-/* ゴールド風船の強い画面揺れ */
-#game.screen-shake-gold {
-    animation:
-        screenShakeGold
-        0.42s
-        linear;
-}
-
-@keyframes screenShakeGold {
-
-    0% {
-        transform: translate(0, 0);
-    }
-
-    15% {
-        transform: translate(-10px, 7px);
-    }
-
-    30% {
-        transform: translate(9px, -7px);
-    }
-
-    45% {
-        transform: translate(-8px, -4px);
-    }
-
-    60% {
-        transform: translate(7px, 5px);
-    }
-
-    75% {
-        transform: translate(-4px, 3px);
-    }
-
-    100% {
-        transform: translate(0, 0);
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration:
+            0.01ms !important;
+
+        animation-iteration-count:
+            1 !important;
+
+        scroll-behavior:
+            auto !important;
     }
 }
