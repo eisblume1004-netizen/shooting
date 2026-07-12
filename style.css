@@ -1095,3 +1095,311 @@ body {
 #connectionStatus {
     display: none;
 }
+
+/* ==================================================
+   豪華な風船破裂エフェクト
+================================================== */
+
+/* 中央の強い光 */
+.burst-flash {
+    position: absolute;
+
+    width: 120px;
+    height: 120px;
+
+    border-radius: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    background:
+        radial-gradient(
+            circle,
+            white 0%,
+            rgba(255, 255, 160, 0.95) 20%,
+            rgba(255, 145, 40, 0.7) 48%,
+            rgba(255, 80, 20, 0) 76%
+        );
+
+    pointer-events: none;
+
+    z-index: 135;
+
+    animation:
+        burstFlashAnimation
+        0.55s
+        ease-out
+        forwards;
+}
+
+.burst-flash.gold {
+    width: 190px;
+    height: 190px;
+
+    background:
+        radial-gradient(
+            circle,
+            white 0%,
+            #fff7a0 20%,
+            rgba(255, 208, 0, 0.95) 45%,
+            rgba(255, 145, 0, 0) 78%
+        );
+}
+
+@keyframes burstFlashAnimation {
+
+    0% {
+        opacity: 1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(0.2);
+    }
+
+    45% {
+        opacity: 1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(1.5);
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(2.4);
+    }
+}
+
+
+/* 外側へ広がる衝撃波 */
+.burst-shockwave {
+    position: absolute;
+
+    width: 80px;
+    height: 80px;
+
+    border:
+        9px solid
+        rgba(255, 255, 255, 0.95);
+
+    border-radius: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    pointer-events: none;
+
+    z-index: 132;
+
+    animation:
+        burstShockwaveAnimation
+        0.7s
+        ease-out
+        forwards;
+}
+
+.burst-shockwave.gold {
+    border-color:
+        #fff17a;
+
+    box-shadow:
+        0 0 18px white,
+        0 0 38px #ffd000;
+}
+
+@keyframes burstShockwaveAnimation {
+
+    0% {
+        opacity: 1;
+
+        transform:
+            translate(-50%, -50%)
+            scale(0.25);
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -50%)
+            scale(5);
+    }
+}
+
+
+/* 飛び散る星 */
+.burst-star {
+    position: absolute;
+
+    width: 17px;
+    height: 17px;
+
+    background:
+        linear-gradient(
+            135deg,
+            white,
+            #ffcf3b
+        );
+
+    transform:
+        translate(-50%, -50%)
+        rotate(45deg);
+
+    box-shadow:
+        0 0 8px white,
+        0 0 15px #ff8a00;
+
+    pointer-events: none;
+
+    z-index: 138;
+
+    animation:
+        burstStarAnimation
+        0.82s
+        cubic-bezier(
+            0.12,
+            0.75,
+            0.28,
+            1
+        )
+        forwards;
+}
+
+.burst-star.gold {
+    width: 23px;
+    height: 23px;
+
+    background:
+        linear-gradient(
+            135deg,
+            white,
+            #fff17a,
+            #ffb000
+        );
+
+    box-shadow:
+        0 0 12px white,
+        0 0 25px #ffd000;
+}
+
+@keyframes burstStarAnimation {
+
+    0% {
+        opacity: 1;
+
+        transform:
+            translate(-50%, -50%)
+            translate(0, 0)
+            rotate(0deg)
+            scale(0.3);
+    }
+
+    40% {
+        opacity: 1;
+
+        transform:
+            translate(-50%, -50%)
+            translate(
+                calc(var(--burst-x) * 0.5),
+                calc(var(--burst-y) * 0.5)
+            )
+            rotate(
+                calc(var(--burst-rotate) * 0.5)
+            )
+            scale(1.4);
+    }
+
+    100% {
+        opacity: 0;
+
+        transform:
+            translate(-50%, -50%)
+            translate(
+                var(--burst-x),
+                var(--burst-y)
+            )
+            rotate(
+                var(--burst-rotate)
+            )
+            scale(0.2);
+    }
+}
+
+
+/* 通常風船の画面揺れ */
+#game.screen-shake {
+    animation:
+        screenShake
+        0.25s
+        linear;
+}
+
+@keyframes screenShake {
+
+    0% {
+        transform: translate(0, 0);
+    }
+
+    20% {
+        transform: translate(-5px, 3px);
+    }
+
+    40% {
+        transform: translate(5px, -3px);
+    }
+
+    60% {
+        transform: translate(-3px, -2px);
+    }
+
+    80% {
+        transform: translate(3px, 2px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
+
+
+/* ゴールド風船の強い画面揺れ */
+#game.screen-shake-gold {
+    animation:
+        screenShakeGold
+        0.42s
+        linear;
+}
+
+@keyframes screenShakeGold {
+
+    0% {
+        transform: translate(0, 0);
+    }
+
+    15% {
+        transform: translate(-10px, 7px);
+    }
+
+    30% {
+        transform: translate(9px, -7px);
+    }
+
+    45% {
+        transform: translate(-8px, -4px);
+    }
+
+    60% {
+        transform: translate(7px, 5px);
+    }
+
+    75% {
+        transform: translate(-4px, 3px);
+    }
+
+    100% {
+        transform: translate(0, 0);
+    }
+}
