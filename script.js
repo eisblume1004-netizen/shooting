@@ -554,6 +554,128 @@ function listenForShots() {
 }
 
 // ==========================================================
+// カメラ開始
+// ==========================================================
+
+async function startCamera() {
+
+    // すでに開始済みなら何もしない
+    if (cameraStarted) {
+        return;
+    }
+
+    cameraStatus.textContent =
+        "接続中";
+
+    try {
+
+        // パソコンのカメラを取得
+        const stream =
+            await navigator.mediaDevices.getUserMedia({
+
+                video: {
+                    width: {
+                        ideal: 1280
+                    },
+
+                    height: {
+                        ideal: 720
+                    }
+                },
+
+                audio: false
+            });
+
+        // video要素へカメラ映像を設定
+        video.srcObject =
+            stream;
+
+        await video.play();
+
+        cameraStarted =
+            true;
+
+        cameraStatus.textContent =
+            "接続済み";
+
+        // 実際のカメラ映像サイズ
+        const videoWidth =
+            video.videoWidth || 1280;
+
+        const videoHeight =
+            video.videoHeight || 720;
+
+        /*
+            検出用Canvasの横幅を640pxにして、
+            カメラ映像と同じ縦横比にします。
+        */
+        detectCanvas.width =
+            DETECT_WIDTH;
+
+        detectCanvas.height =
+            Math.round(
+                DETECT_WIDTH *
+                videoHeight /
+                videoWidth
+            );
+
+        // ArUcoライブラリが読み込めているか確認
+        if (
+            typeof AR === "undefined"
+        ) {
+
+            throw new Error(
+                "ArUcoライブラリが読み込まれていません"
+            );
+        }
+
+        /*
+            先輩の元コードと同じ標準設定です。
+            今回のマーカーには、まずこちらを使います。
+        */
+        detector =
+            new AR.Detector();
+
+        console.log(
+            "カメラとArUco検出器を開始しました",
+            {
+                videoWidth:
+                    videoWidth,
+
+                videoHeight:
+                    videoHeight,
+
+                canvasWidth:
+                    detectCanvas.width,
+
+                canvasHeight:
+                    detectCanvas.height
+            }
+        );
+
+        // マーカー検出ループを開始
+        requestAnimationFrame(
+            updateAruco
+        );
+
+    } catch (error) {
+
+        cameraStarted =
+            false;
+
+        cameraStatus.textContent =
+            "使用不可";
+
+        markerStatus.textContent =
+            "カメラなし";
+
+        console.error(
+            "カメラ開始エラー：",
+            error
+        );
+    }
+}
+// ==========================================================
 // ArUcoマーカー検出
 // ==========================================================
 
