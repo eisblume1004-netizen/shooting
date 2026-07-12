@@ -553,94 +553,6 @@ function listenForShots() {
     );
 }
 
-
-// ==========================================================
-// カメラ開始
-// ==========================================================
-
-async function startCamera() {
-
-    if (cameraStarted) {
-        return;
-    }
-
-    cameraStatus.textContent =
-        "接続中";
-
-    try {
-
-        const stream =
-            await navigator.mediaDevices.getUserMedia({
-
-                video: {
-                    width: {
-                        ideal:
-                            1280
-                    },
-
-                    height: {
-                        ideal:
-                            720
-                    },
-
-                    facingMode:
-                        "environment"
-                },
-
-                audio:
-                    false
-            });
-
-        video.srcObject =
-            stream;
-
-        await video.play();
-
-        cameraStarted =
-            true;
-
-        cameraStatus.textContent =
-            "接続済み";
-
-        detectCanvas.width =
-            DETECT_WIDTH;
-
-        detectCanvas.height =
-            DETECT_HEIGHT;
-
-        if (
-            typeof AR ===
-            "undefined"
-        ) {
-
-            throw new Error(
-                "ArUcoライブラリを読み込めませんでした"
-            );
-        }
-
-        detector =
-            new AR.Detector();
-
-        requestAnimationFrame(
-            updateAruco
-        );
-
-    } catch (error) {
-
-        cameraStatus.textContent =
-            "使用不可";
-
-        markerStatus.textContent =
-            "カメラなし";
-
-        console.error(
-            "カメラ開始エラー：",
-            error
-        );
-    }
-}
-
-
 // ==========================================================
 // ArUcoマーカー検出
 // ==========================================================
@@ -649,6 +561,11 @@ function updateAruco() {
 
     detectionFrame++;
 
+    /*
+        処理負荷を下げるため、
+        2フレームに1回だけ検出します。
+    */
+
     if (
         detectionFrame % 2 === 0 &&
         video.readyState >=
@@ -656,12 +573,16 @@ function updateAruco() {
         detector
     ) {
 
+        /*
+            カメラ映像を検出用Canvasへ描画します。
+        */
+
         detectContext.drawImage(
             video,
             0,
             0,
-            DETECT_WIDTH,
-            DETECT_HEIGHT
+            detectCanvas.width,
+            detectCanvas.height
         );
 
         try {
@@ -670,8 +591,8 @@ function updateAruco() {
                 detectContext.getImageData(
                     0,
                     0,
-                    DETECT_WIDTH,
-                    DETECT_HEIGHT
+                    detectCanvas.width,
+                    detectCanvas.height
                 );
 
             const markers =
@@ -680,6 +601,7 @@ function updateAruco() {
                 );
 
             if (
+                markers &&
                 markers.length > 0
             ) {
 
@@ -696,11 +618,8 @@ function updateAruco() {
                 const marker =
                     markers[0];
 
-                let markerX =
-                    0;
-
-                let markerY =
-                    0;
+                let markerX = 0;
+                let markerY = 0;
 
                 for (
                     const corner
@@ -723,23 +642,46 @@ function updateAruco() {
                 if (MIRROR_AIM_X) {
 
                     markerX =
-                        DETECT_WIDTH -
+                        detectCanvas.width -
                         markerX;
                 }
+
+                /*
+                    検出用Canvas上の位置を、
+                    ゲーム画面上の位置へ変換します。
+                */
 
                 targetAimX =
                     (
                         markerX /
-                        DETECT_WIDTH
+                        detectCanvas.width
                     ) *
                     window.innerWidth;
 
                 targetAimY =
                     (
                         markerY /
-                        DETECT_HEIGHT
+                        detectCanvas.height
                     ) *
                     window.innerHeight;
+
+                console.log(
+                    "ArUco検出成功",
+                    {
+                        id:
+                            marker.id,
+
+                        x:
+                            Math.round(
+                                markerX
+                            ),
+
+                        y:
+                            Math.round(
+                                markerY
+                            )
+                    }
+                );
 
             } else {
 
@@ -762,6 +704,10 @@ function updateAruco() {
             );
         }
     }
+
+    /*
+        照準をなめらかに移動
+    */
 
     aimX +=
         (
