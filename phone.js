@@ -1,6 +1,13 @@
 // ==========================================================
 // スマホ用発射コントローラー
-// Firebaseを通してパソコンへ発射情報を送ります
+//
+// ボタンを押すたびにFirebase上の
+// fireCounterを1増やします。
+// ==========================================================
+
+
+// ==========================================================
+// Firebase SDK
 // ==========================================================
 
 import {
@@ -17,8 +24,7 @@ import {
 import {
     getDatabase,
     ref,
-    set,
-    serverTimestamp
+    runTransaction
 } from
 "https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
 
@@ -55,7 +61,8 @@ const firebaseConfig = {
 // パソコン側と同じ部屋名
 // ==========================================================
 
-const ROOM_ID = "main";
+const ROOM_ID =
+    "main";
 
 
 // ==========================================================
@@ -74,14 +81,17 @@ const statusText =
 
 
 // ==========================================================
-// Firebase
+// Firebase関連
 // ==========================================================
 
-let database = null;
+let database =
+    null;
 
-let connected = false;
+let connected =
+    false;
 
-let sending = false;
+let sending =
+    false;
 
 
 // ==========================================================
@@ -92,23 +102,19 @@ async function connectFirebase() {
 
     try {
 
+        statusText.textContent =
+            "認証中…";
+
         const app =
             initializeApp(
                 firebaseConfig
             );
 
         const auth =
-            getAuth(
-                app
-            );
+            getAuth(app);
 
         database =
-            getDatabase(
-                app
-            );
-
-        statusText.textContent =
-            "認証中…";
+            getDatabase(app);
 
         await signInAnonymously(
             auth
@@ -123,12 +129,16 @@ async function connectFirebase() {
         statusText.textContent =
             "接続済み";
 
+        statusText.classList.remove(
+            "error"
+        );
+
         statusText.classList.add(
             "connected"
         );
 
         console.log(
-            "Firebase接続成功"
+            "スマホ側Firebase接続成功"
         );
 
     } catch (error) {
@@ -141,6 +151,10 @@ async function connectFirebase() {
 
         statusText.textContent =
             "接続できません";
+
+        statusText.classList.remove(
+            "connected"
+        );
 
         statusText.classList.add(
             "error"
@@ -155,7 +169,7 @@ async function connectFirebase() {
 
 
 // ==========================================================
-// 発射情報をFirebaseへ送る
+// 発射情報を送信
 // ==========================================================
 
 async function sendShot() {
@@ -165,6 +179,17 @@ async function sendShot() {
         !database ||
         sending
     ) {
+
+        console.warn(
+            "発射できない状態です",
+            {
+                connected,
+                database:
+                    Boolean(database),
+                sending
+            }
+        );
+
         return;
     }
 
@@ -174,11 +199,6 @@ async function sendShot() {
     fireButton.classList.add(
         "pressed"
     );
-
-    /*
-       スマホが対応していれば、
-       短く振動させます。
-    */
 
     if (
         "vibrate"
@@ -192,41 +212,57 @@ async function sendShot() {
 
     try {
 
-        const shotReference =
+        const counterReference =
             ref(
                 database,
                 "rooms/" +
                 ROOM_ID +
-                "/shot"
+                "/fireCounter"
             );
 
         /*
-           毎回異なるIDを書き込みます。
-           パソコン側はIDが変化したことを見て発射します。
+           現在の数字に1を足します。
+
+           0 → 1 → 2 → 3
         */
 
-        const shotId =
-            (
-                crypto.randomUUID
-                    ? crypto.randomUUID()
-                    : Date.now() +
-                      "-" +
-                      Math.random()
+        const result =
+            await runTransaction(
+                counterReference,
+
+                function (currentValue) {
+
+                    const currentNumber =
+                        Number(
+                            currentValue
+                        ) || 0;
+
+                    return (
+                        currentNumber +
+                        1
+                    );
+                }
             );
 
-        await set(
-            shotReference,
-            {
-                id:
-                    shotId,
+        if (
+            !result.committed
+        ) {
 
-                time:
-                    serverTimestamp()
-            }
-        );
+            throw new Error(
+                "発射情報を保存できませんでした"
+            );
+        }
+
+        const newCounter =
+            result.snapshot.val();
 
         statusText.textContent =
             "発射！";
+
+        console.log(
+            "発射送信成功：",
+            newCounter
+        );
 
         setTimeout(
             function () {
@@ -245,6 +281,10 @@ async function sendShot() {
 
         statusText.textContent =
             "送信エラー";
+
+        statusText.classList.remove(
+            "connected"
+        );
 
         statusText.classList.add(
             "error"
@@ -268,14 +308,14 @@ async function sendShot() {
                 );
 
             },
-            100
+            120
         );
     }
 }
 
 
 // ==========================================================
-// タッチ操作
+// ボタン操作
 // ==========================================================
 
 fireButton.addEventListener(
