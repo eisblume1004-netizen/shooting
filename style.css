@@ -28,16 +28,6 @@ body {
 }
 
 
-/*
-   ゲーム画面ではマウスカーソルを完全に消します。
-   照準はArUcoマーカーで操作します。
-*/
-
-#game,
-#game * {
-    cursor: none !important;
-}
-
 
 /* スタートボタンだけは押せることが分かるようにする */
 #startButton {
@@ -1096,4 +1086,36 @@ body {
 
         font-size: 23px;
     }
+}
+
+/* ==================================================
+   マウス操作用設定
+================================================== */
+
+/* ゲーム画面では通常のマウスカーソルを表示 */
+#game {
+    cursor: crosshair;
+}
+
+/* スタートボタンでは指のカーソル */
+#startButton {
+    cursor: pointer;
+}
+
+/* 照準や風船がクリックを邪魔しないようにする */
+#scope,
+#shotFlash,
+#balloonArea,
+.balloon {
+    pointer-events: none;
+}
+
+/* マウス操作中は照準を常にはっきり表示 */
+#scope {
+    opacity: 1;
+}
+
+/* 接続状況は使用しない */
+#connectionStatus {
+    display: none;
 }
