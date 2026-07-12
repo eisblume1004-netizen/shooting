@@ -9,62 +9,6 @@
 // ==========================================================
 
 
-// ==========================================================
-// Firebase SDK
-// ==========================================================
-
-import {
-    initializeApp
-} from
-"https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-
-import {
-    getAuth,
-    signInAnonymously
-} from
-"https://www.gstatic.com/firebasejs/12.16.0/firebase-auth.js";
-
-import {
-    getDatabase,
-    ref,
-    onValue
-} from
-"https://www.gstatic.com/firebasejs/12.16.0/firebase-database.js";
-
-
-// ==========================================================
-// Firebase設定
-// ==========================================================
-
-const firebaseConfig = {
-    apiKey:
-        "AIzaSyCC7CgZIP6RsU18XK2Vb_7_4nk9Cj_5NcM",
-
-    authDomain:
-        "wakutatu-shooting.firebaseapp.com",
-
-    databaseURL:
-        "https://wakutatu-shooting-default-rtdb.asia-southeast1.firebasedatabase.app",
-
-    projectId:
-        "wakutatu-shooting",
-
-    storageBucket:
-        "wakutatu-shooting.firebasestorage.app",
-
-    messagingSenderId:
-        "720905273138",
-
-    appId:
-        "1:720905273138:web:df97327c6007b5cbc1612b"
-};
-
-
-// ==========================================================
-// スマホ側と同じ部屋名
-// ==========================================================
-
-const ROOM_ID = "main";
 
 
 // ==========================================================
@@ -104,48 +48,11 @@ const HIT_RADIUS_Y = 0.28;
 
 
 // ==========================================================
-// ArUco設定
-// ==========================================================
-
-const DETECT_WIDTH = 640;
-
-const DETECT_HEIGHT = 360;
-
-
-/*
-   照準が左右逆ならtrueに変更
-*/
-
-const MIRROR_AIM_X = false;
-
-
-/*
-   小さいほど滑らか、大きいほど反応が速い
-*/
-
-const AIM_SMOOTH = 0.22;
-
-
-// ==========================================================
 // HTML要素
 // ==========================================================
 
 const game =
     document.getElementById("game");
-
-const video =
-    document.getElementById("camera");
-
-const detectCanvas =
-    document.getElementById("detectCanvas");
-
-const detectContext =
-    detectCanvas.getContext(
-        "2d",
-        {
-            willReadFrequently: true
-        }
-    );
 
 const balloonArea =
     document.getElementById("balloonArea");
@@ -177,24 +84,12 @@ const message =
 const startButton =
     document.getElementById("startButton");
 
-const cameraStatus =
-    document.getElementById("cameraStatus");
-
-const markerStatus =
-    document.getElementById("markerStatus");
-
-const firebaseStatus =
-    document.getElementById("firebaseStatus");
-
-
 // ==========================================================
 // 必須要素の確認
 // ==========================================================
 
 const requiredElements = {
     game,
-    video,
-    detectCanvas,
     balloonArea,
     scope,
     shotFlash,
@@ -205,9 +100,6 @@ const requiredElements = {
     resultOverlay,
     message,
     startButton,
-    cameraStatus,
-    markerStatus,
-    firebaseStatus
 };
 
 for (
@@ -323,36 +215,15 @@ let extraBalloonAdded =
 
 let balloonId =
     0;
-
-
 // ==========================================================
-// ArUco関連
+// マウス照準関連
 // ==========================================================
-
-let detector =
-    null;
-
-let cameraStarted =
-    false;
-
-let markerDetected =
-    false;
 
 let aimX =
     window.innerWidth / 2;
 
 let aimY =
     window.innerHeight / 2;
-
-let targetAimX =
-    aimX;
-
-let targetAimY =
-    aimY;
-
-let detectionFrame =
-    0;
-
 
 // ==========================================================
 // Firebase関連
@@ -395,464 +266,23 @@ function playSound(sound) {
     );
 }
 
-
 // ==========================================================
-// Firebaseへ接続
+// マウスを動かした位置へ照準を移動
 // ==========================================================
 
-async function connectFirebase() {
+document.addEventListener(
+    "mousemove",
+    function (event) {
 
-    try {
+        aimX =
+            event.clientX;
 
-        firebaseStatus.textContent =
-            "認証中";
+        aimY =
+            event.clientY;
 
-        const app =
-            initializeApp(
-                firebaseConfig
-            );
-
-        const auth =
-            getAuth(app);
-
-        database =
-            getDatabase(app);
-
-        await signInAnonymously(
-            auth
-        );
-
-        firebaseStatus.textContent =
-            "受信準備中";
-
-        console.log(
-            "Firebase匿名認証成功"
-        );
-
-        listenForShots();
-
-    } catch (error) {
-
-        firebaseStatus.textContent =
-            "接続エラー";
-
-        console.error(
-            "Firebase接続エラー：",
-            error
-        );
+        updateScopePosition();
     }
-}
-
-
-// ==========================================================
-// スマホの発射番号を監視
-// ==========================================================
-
-function listenForShots() {
-
-    const fireCounterReference =
-        ref(
-            database,
-            "rooms/" +
-            ROOM_ID +
-            "/fireCounter"
-        );
-
-    onValue(
-        fireCounterReference,
-
-        function (snapshot) {
-
-            const currentCounter =
-                Number(
-                    snapshot.val()
-                ) || 0;
-
-            /*
-               最初の読み込み時は、
-               現在の番号を記録するだけです。
-            */
-
-            if (
-                lastFireCounter ===
-                null
-            ) {
-
-                lastFireCounter =
-                    currentCounter;
-
-                firebaseStatus.textContent =
-                    "受信準備完了";
-
-                console.log(
-                    "発射受信準備完了：",
-                    currentCounter
-                );
-
-                return;
-            }
-
-            /*
-               数字が変わっていなければ無視
-            */
-
-            if (
-                currentCounter ===
-                lastFireCounter
-            ) {
-                return;
-            }
-
-            console.log(
-                "スマホから発射を受信：",
-                {
-                    前回:
-                        lastFireCounter,
-
-                    今回:
-                        currentCounter
-                }
-            );
-
-            lastFireCounter =
-                currentCounter;
-
-            firebaseStatus.textContent =
-                "発射受信！";
-
-            /*
-               現在のArUco照準位置へ発射
-            */
-
-            shootAt(
-                aimX,
-                aimY
-            );
-
-            setTimeout(
-                function () {
-
-                    firebaseStatus.textContent =
-                        "受信準備完了";
-
-                },
-                350
-            );
-        },
-
-        function (error) {
-
-            firebaseStatus.textContent =
-                "受信エラー";
-
-            console.error(
-                "Firebase受信エラー：",
-                error
-            );
-        }
-    );
-}
-
-// ==========================================================
-// カメラ開始
-// ==========================================================
-
-async function startCamera() {
-
-    // すでに開始済みなら何もしない
-    if (cameraStarted) {
-        return;
-    }
-
-    cameraStatus.textContent =
-        "接続中";
-
-    try {
-
-        // パソコンのカメラを取得
-        const stream =
-            await navigator.mediaDevices.getUserMedia({
-
-                video: {
-                    width: {
-                        ideal: 1280
-                    },
-
-                    height: {
-                        ideal: 720
-                    }
-                },
-
-                audio: false
-            });
-
-        // video要素へカメラ映像を設定
-        video.srcObject =
-            stream;
-
-        await video.play();
-
-        cameraStarted =
-            true;
-
-        cameraStatus.textContent =
-            "接続済み";
-
-        // 実際のカメラ映像サイズ
-        const videoWidth =
-            video.videoWidth || 1280;
-
-        const videoHeight =
-            video.videoHeight || 720;
-
-        /*
-            検出用Canvasの横幅を640pxにして、
-            カメラ映像と同じ縦横比にします。
-        */
-        detectCanvas.width =
-            DETECT_WIDTH;
-
-        detectCanvas.height =
-            Math.round(
-                DETECT_WIDTH *
-                videoHeight /
-                videoWidth
-            );
-
-        // ArUcoライブラリが読み込めているか確認
-        if (
-            typeof AR === "undefined"
-        ) {
-
-            throw new Error(
-                "ArUcoライブラリが読み込まれていません"
-            );
-        }
-
-        /*
-            先輩の元コードと同じ標準設定です。
-            今回のマーカーには、まずこちらを使います。
-        */
-        detector =
-            new AR.Detector();
-
-        console.log(
-            "カメラとArUco検出器を開始しました",
-            {
-                videoWidth:
-                    videoWidth,
-
-                videoHeight:
-                    videoHeight,
-
-                canvasWidth:
-                    detectCanvas.width,
-
-                canvasHeight:
-                    detectCanvas.height
-            }
-        );
-
-        // マーカー検出ループを開始
-        requestAnimationFrame(
-            updateAruco
-        );
-
-    } catch (error) {
-
-        cameraStarted =
-            false;
-
-        cameraStatus.textContent =
-            "使用不可";
-
-        markerStatus.textContent =
-            "カメラなし";
-
-        console.error(
-            "カメラ開始エラー：",
-            error
-        );
-    }
-}
-// ==========================================================
-// ArUcoマーカー検出
-// ==========================================================
-
-function updateAruco() {
-
-    detectionFrame++;
-
-    /*
-        処理負荷を下げるため、
-        2フレームに1回だけ検出します。
-    */
-
-    if (
-        detectionFrame % 2 === 0 &&
-        video.readyState >=
-        video.HAVE_CURRENT_DATA &&
-        detector
-    ) {
-
-        /*
-            カメラ映像を検出用Canvasへ描画します。
-        */
-
-        detectContext.drawImage(
-            video,
-            0,
-            0,
-            detectCanvas.width,
-            detectCanvas.height
-        );
-
-        try {
-
-            const imageData =
-                detectContext.getImageData(
-                    0,
-                    0,
-                    detectCanvas.width,
-                    detectCanvas.height
-                );
-
-            const markers =
-                detector.detect(
-                    imageData
-                );
-
-            if (
-                markers &&
-                markers.length > 0
-            ) {
-
-                markerDetected =
-                    true;
-
-                markerStatus.textContent =
-                    "検出中";
-
-                scope.classList.add(
-                    "detected"
-                );
-
-                const marker =
-                    markers[0];
-
-                let markerX = 0;
-                let markerY = 0;
-
-                for (
-                    const corner
-                    of marker.corners
-                ) {
-
-                    markerX +=
-                        corner.x;
-
-                    markerY +=
-                        corner.y;
-                }
-
-                markerX /=
-                    marker.corners.length;
-
-                markerY /=
-                    marker.corners.length;
-
-                if (MIRROR_AIM_X) {
-
-                    markerX =
-                        detectCanvas.width -
-                        markerX;
-                }
-
-                /*
-                    検出用Canvas上の位置を、
-                    ゲーム画面上の位置へ変換します。
-                */
-
-                targetAimX =
-                    (
-                        markerX /
-                        detectCanvas.width
-                    ) *
-                    window.innerWidth;
-
-                targetAimY =
-                    (
-                        markerY /
-                        detectCanvas.height
-                    ) *
-                    window.innerHeight;
-
-                console.log(
-                    "ArUco検出成功",
-                    {
-                        id:
-                            marker.id,
-
-                        x:
-                            Math.round(
-                                markerX
-                            ),
-
-                        y:
-                            Math.round(
-                                markerY
-                            )
-                    }
-                );
-
-            } else {
-
-                markerDetected =
-                    false;
-
-                markerStatus.textContent =
-                    "未検出";
-
-                scope.classList.remove(
-                    "detected"
-                );
-            }
-
-        } catch (error) {
-
-            console.warn(
-                "ArUco検出エラー：",
-                error
-            );
-        }
-    }
-
-    /*
-        照準をなめらかに移動
-    */
-
-    aimX +=
-        (
-            targetAimX -
-            aimX
-        ) *
-        AIM_SMOOTH;
-
-    aimY +=
-        (
-            targetAimY -
-            aimY
-        ) *
-        AIM_SMOOTH;
-
-    updateScopePosition();
-
-    requestAnimationFrame(
-        updateAruco
-    );
-}
-
-
+);
 // ==========================================================
 // 照準位置を更新
 // ==========================================================
@@ -1829,31 +1259,49 @@ startButton.addEventListener(
     }
 );
 
-
 // ==========================================================
-// スペースキーでパソコン側の発射テスト
-// マウスでは発射しません
+// マウスクリックで発射
+//
+// クリックした場所の座標で当たり判定します。
 // ==========================================================
 
-window.addEventListener(
-    "keydown",
+game.addEventListener(
+    "click",
     function (event) {
 
+        // スタートボタンをクリックしたときは撃たない
         if (
-            event.code ===
-            "Space"
+            event.target.closest(
+                "#startButton"
+            )
         ) {
-
-            event.preventDefault();
-
-            shootAt(
-                aimX,
-                aimY
-            );
+            return;
         }
+
+        // クリックした位置を照準位置に設定
+        aimX =
+            event.clientX;
+
+        aimY =
+            event.clientY;
+
+        updateScopePosition();
+
+        console.log(
+            "マウスクリックで発射",
+            {
+                x: Math.round(aimX),
+                y: Math.round(aimY)
+            }
+        );
+
+        // クリックした場所で当たり判定
+        shootAt(
+            aimX,
+            aimY
+        );
     }
 );
-
 
 // ==========================================================
 // 画面サイズ変更
@@ -1883,7 +1331,6 @@ window.addEventListener(
     }
 );
 
-
 // ==========================================================
 // 初期化
 // ==========================================================
@@ -1901,16 +1348,14 @@ function initializeGame() {
     countdown.style.display =
         "none";
 
+    scope.style.display =
+        "block";
+
     updateScopePosition();
 
-    connectFirebase();
-
-    startCamera();
-
     console.log(
-        "ゲームの初期化完了"
+        "マウス操作版ゲームの初期化完了"
     );
 }
-
 
 initializeGame();
