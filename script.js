@@ -116,58 +116,44 @@ for (
     }
 }
 
-
 // ==========================================================
 // 風船データ
+//
+// image：通常時の画像
+// popImage：撃たれて割れたときの画像
+// points：得点
+// type：風船の種類
 // ==========================================================
 
 const normalBalloons = [
     {
-        image:
-            "images/redballoon.png",
-
-        points:
-            1,
-
-        type:
-            "normal"
+        image: "images/redballoon.png",
+        popImage: "images/red.png",
+        points: 1,
+        type: "normal"
     },
 
     {
-        image:
-            "images/blueballoon.png",
-
-        points:
-            1,
-
-        type:
-            "normal"
+        image: "images/blueballoon.png",
+        popImage: "images/blue.png",
+        points: 1,
+        type: "normal"
     },
 
     {
-        image:
-            "images/yellowballoon.png",
-
-        points:
-            1,
-
-        type:
-            "normal"
+        image: "images/yellowballoon.png",
+        popImage: "images/yellow.png",
+        points: 1,
+        type: "normal"
     }
 ];
 
-
 const goldBalloon = {
-    image:
-        "images/goldballoon.png",
-
-    points:
-        5,
-
-    type:
-        "gold"
+    image: "images/goldballoon.png",
+    popImage: "images/gold.png",
+    points: 5,
+    type: "gold"
 };
-
 
 // ==========================================================
 // 効果音
@@ -311,9 +297,8 @@ function getRandomBalloonData() {
     ];
 }
 
-
 // ==========================================================
-// 風船情報を設定
+// 風船の画像・割れた画像・得点を設定
 // ==========================================================
 
 function applyBalloonData(
@@ -321,19 +306,28 @@ function applyBalloonData(
     balloonData
 ) {
 
+    // 前のゴールド設定を外す
     balloon.classList.remove(
         "gold"
     );
 
+    // 通常時の風船画像
     balloon.src =
         balloonData.image;
 
+    // 割れたときの画像を記録
+    balloon.dataset.popImage =
+        balloonData.popImage;
+
+    // 得点を記録
     balloon.dataset.points =
         balloonData.points;
 
+    // 風船の種類を記録
     balloon.dataset.type =
         balloonData.type;
 
+    // ゴールド風船だけgoldクラスを付ける
     if (
         balloonData.type ===
         "gold"
@@ -344,7 +338,6 @@ function applyBalloonData(
         );
     }
 }
-
 
 // ==========================================================
 // 風船を1個作る
@@ -693,10 +686,13 @@ function showShotFlash(
         "show"
     );
 }
-
-
 // ==========================================================
-// 命中処理
+// 風船に命中したときの処理
+//
+// 1. 割れた画像へ変更
+// 2. 得点を追加
+// 3. エフェクトを表示
+// 4. 少し待って別の風船として復活
 // ==========================================================
 
 function handleHit(
@@ -705,6 +701,7 @@ function handleHit(
     shotY
 ) {
 
+    // すでに割れている途中なら何もしない
     if (
         balloon.classList.contains(
             "popping"
@@ -716,24 +713,43 @@ function handleHit(
     const points =
         Number(
             balloon.dataset.points
-        );
+        ) || 1;
 
     const isGold =
         balloon.dataset.type ===
         "gold";
 
+    // 二重当たり防止
+    balloon.classList.add(
+        "popping"
+    );
+
+    // 割れた画像へ変更
+    const popImage =
+        balloon.dataset.popImage;
+
+    if (popImage) {
+
+        balloon.src =
+            popImage;
+    }
+
+    // 命中音
     playSound(
         popSound
     );
 
+    // スコア加算
     score +=
         points;
 
     scoreText.textContent =
         score;
 
+    // スコア演出
     playScoreBump();
 
+    // +1、+5表示
     showScorePopup(
         shotX,
         shotY,
@@ -741,28 +757,44 @@ function handleHit(
         isGold
     );
 
+    // 紙吹雪
     createConfetti(
         shotX,
         shotY,
         isGold
     );
 
-    balloon.classList.add(
-        "popping"
+    console.log(
+        "風船に命中しました",
+        {
+            points: points,
+            score: score,
+            popImage: popImage
+        }
     );
 
+    // 割れた画像を少し見せてから、
+    // 別の場所へ新しい風船として復活
     setTimeout(
         function () {
 
+            // ゲーム終了後なら復活させない
+            if (!playing) {
+                return;
+            }
+
+            // 新しい色の風船を設定
             applyBalloonData(
                 balloon,
                 getRandomBalloonData()
             );
 
+            // 新しい場所へ移動
             moveBalloon(
                 balloon
             );
 
+            // 割れている状態を解除
             balloon.classList.remove(
                 "popping"
             );
