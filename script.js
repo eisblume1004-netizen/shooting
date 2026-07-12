@@ -763,6 +763,17 @@ function handleHit(
         shotY,
         isGold
     );
+    // 強い光・衝撃波・星のエフェクト
+createBurstEffect(
+    shotX,
+    shotY,
+    isGold
+);
+
+// 画面を少し揺らす
+shakeGameScreen(
+    isGold
+);
 
     console.log(
         "風船に命中しました",
@@ -1036,6 +1047,233 @@ function createConfetti(
     }
 }
 
+// ==========================================================
+// 豪華な破裂エフェクト
+//
+// 割れた画像の上に、光・衝撃波・星を表示します。
+// ==========================================================
+
+function createBurstEffect(
+    x,
+    y,
+    isGold
+) {
+
+    // ------------------------------------------------------
+    // 中央の強い光
+    // ------------------------------------------------------
+
+    const flash =
+        document.createElement(
+            "div"
+        );
+
+    flash.classList.add(
+        "burst-flash"
+    );
+
+    if (isGold) {
+
+        flash.classList.add(
+            "gold"
+        );
+    }
+
+    flash.style.left =
+        x + "px";
+
+    flash.style.top =
+        y + "px";
+
+    game.appendChild(
+        flash
+    );
+
+
+    // ------------------------------------------------------
+    // 外側へ広がる衝撃波
+    // ------------------------------------------------------
+
+    const shockwave =
+        document.createElement(
+            "div"
+        );
+
+    shockwave.classList.add(
+        "burst-shockwave"
+    );
+
+    if (isGold) {
+
+        shockwave.classList.add(
+            "gold"
+        );
+    }
+
+    shockwave.style.left =
+        x + "px";
+
+    shockwave.style.top =
+        y + "px";
+
+    game.appendChild(
+        shockwave
+    );
+
+
+    // ------------------------------------------------------
+    // 飛び散る星
+    // ------------------------------------------------------
+
+    const starCount =
+        isGold
+            ? 20
+            : 12;
+
+    for (
+        let index = 0;
+        index < starCount;
+        index++
+    ) {
+
+        const star =
+            document.createElement(
+                "div"
+            );
+
+        star.classList.add(
+            "burst-star"
+        );
+
+        if (isGold) {
+
+            star.classList.add(
+                "gold"
+            );
+        }
+
+        const angle =
+            Math.random() *
+            Math.PI *
+            2;
+
+        const distance =
+            isGold
+                ? 130 +
+                  Math.random() *
+                  180
+                : 90 +
+                  Math.random() *
+                  130;
+
+        const moveX =
+            Math.cos(angle) *
+            distance;
+
+        const moveY =
+            Math.sin(angle) *
+            distance;
+
+        const rotation =
+            Math.random() *
+            900 -
+            450;
+
+        star.style.left =
+            x + "px";
+
+        star.style.top =
+            y + "px";
+
+        star.style.setProperty(
+            "--burst-x",
+            moveX + "px"
+        );
+
+        star.style.setProperty(
+            "--burst-y",
+            moveY + "px"
+        );
+
+        star.style.setProperty(
+            "--burst-rotate",
+            rotation + "deg"
+        );
+
+        game.appendChild(
+            star
+        );
+
+        setTimeout(
+            function () {
+
+                star.remove();
+
+            },
+            900
+        );
+    }
+
+
+    // ------------------------------------------------------
+    // 使用後の要素を削除
+    // ------------------------------------------------------
+
+    setTimeout(
+        function () {
+
+            flash.remove();
+            shockwave.remove();
+
+        },
+        900
+    );
+}
+
+
+// ==========================================================
+// 命中時の画面揺れ
+// ==========================================================
+
+function shakeGameScreen(
+    isGold
+) {
+
+    game.classList.remove(
+        "screen-shake",
+        "screen-shake-gold"
+    );
+
+    // 連続命中でも最初から再生
+    void game.offsetWidth;
+
+    if (isGold) {
+
+        game.classList.add(
+            "screen-shake-gold"
+        );
+
+    } else {
+
+        game.classList.add(
+            "screen-shake"
+        );
+    }
+
+    setTimeout(
+        function () {
+
+            game.classList.remove(
+                "screen-shake",
+                "screen-shake-gold"
+            );
+
+        },
+        isGold
+            ? 420
+            : 260
+    );
+}
 
 // ==========================================================
 // カウントダウン
