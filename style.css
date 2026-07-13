@@ -2088,3 +2088,161 @@ body {
             auto !important;
     }
 }
+/* ==================================================
+   宝の地図GET画面
+================================================== */
+
+#rewardScreen {
+    position: absolute;
+    inset: 0;
+
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    overflow: hidden;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255, 196, 34, 0.25),
+            rgba(0, 0, 0, 0.82) 68%
+        );
+
+    z-index: 9000;
+}
+
+
+/* 宝の地図のピースGET！ */
+#rewardTitle {
+    margin-bottom: 25px;
+
+    color: #fff4a3;
+
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: bold;
+
+    text-align: center;
+
+    text-shadow:
+        0 5px 0 #8d4a16,
+        0 0 18px #ffd000,
+        0 0 35px #ff9500;
+
+    animation:
+        rewardTitleAppear
+        0.8s
+        ease-out
+        both;
+
+    z-index: 9010;
+}
+
+
+@keyframes rewardTitleAppear {
+
+    0% {
+        opacity: 0;
+
+        transform:
+            translateY(-40px)
+            scale(0.4);
+    }
+
+    70% {
+        opacity: 1;
+
+        transform:
+            translateY(8px)
+            scale(1.12);
+    }
+
+    100% {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+}
+
+
+/* 宝の地図ピース */
+#mapPieceImage {
+    width: min(46vw, 430px);
+    max-height: 60vh;
+
+    object-fit: contain;
+
+    pointer-events: none;
+
+    filter:
+        drop-shadow(0 0 15px #ffe76a)
+        drop-shadow(0 0 35px #ffb300)
+        drop-shadow(0 12px 10px rgba(0, 0, 0, 0.4));
+
+    animation:
+        mapPieceFlyForward
+        1.2s
+        cubic-bezier(0.18, 0.82, 0.25, 1.15)
+        both;
+
+    z-index: 9010;
+}
+
+
+/* 奥から手前へ飛び出す */
+@keyframes mapPieceFlyForward {
+
+    0% {
+        opacity: 0;
+
+        transform:
+            perspective(900px)
+            translateZ(-800px)
+            scale(0.08)
+            rotate(-12deg);
+    }
+
+    55% {
+        opacity: 1;
+
+        transform:
+            perspective(900px)
+            translateZ(180px)
+            scale(1.18)
+            rotate(5deg);
+    }
+
+    75% {
+        transform:
+            perspective(900px)
+            translateZ(-20px)
+            scale(0.96)
+            rotate(-2deg);
+    }
+
+    100% {
+        opacity: 1;
+
+        transform:
+            perspective(900px)
+            translateZ(0)
+            scale(1)
+            rotate(0deg);
+    }
+}
+
+
+@media (max-width: 700px) {
+
+    #rewardTitle {
+        font-size: 34px;
+    }
+
+    #mapPieceImage {
+        width: min(72vw, 330px);
+        max-height: 52vh;
+    }
+}
