@@ -14,23 +14,14 @@
 // ==========================================================
 
 const GAME_TIME = 20;
-
 const START_BALLOON_COUNT = 3;
-
 const LAST_BALLOON_COUNT = 4;
-
 const ADD_BALLOON_TIME = 10;
-
 const GOLD_BALLOON_RATE = 0.1;
-
 const BALLOON_WIDTH = 230;
-
 const BALLOON_HEIGHT = 310;
-
 const SCREEN_MARGIN = 25;
-
 const TOP_MARGIN = 130;
-
 
 // ==========================================================
 // 風船の当たり判定
@@ -83,6 +74,19 @@ const startButton =
     document.getElementById("startButton");
 
 // ==========================================================
+// 宝の地図GET画面
+// ==========================================================
+
+const rewardScreen =
+    document.getElementById("rewardScreen");
+
+const rewardTitle =
+    document.getElementById("rewardTitle");
+
+const mapPieceImage =
+    document.getElementById("mapPieceImage");
+
+// ==========================================================
 // 必須要素の確認
 // ==========================================================
 
@@ -98,6 +102,9 @@ const requiredElements = {
     resultOverlay,
     message,
     startButton,
+    rewardScreen,
+    rewardTitle,
+    mapPieceImage,
 };
 
 for (
@@ -1486,15 +1493,25 @@ function endGame() {
         "<strong>" +
         score +
         "点</strong>";
+message.style.display =
+    "block";
+
+// スタートボタンは表示しない
+startButton.style.display =
+    "none";
+
+// 2秒後に宝の地図GET画面へ
+setTimeout(function () {
 
     message.style.display =
-        "block";
+        "none";
 
-    startButton.textContent =
-        "もう一度あそぶ";
+    resultOverlay.style.display =
+        "none";
 
-    startButton.style.display =
-        "block";
+    showTreasureMapReward();
+
+}, 2000);
 }
 
 
@@ -1591,24 +1608,46 @@ window.addEventListener(
 function initializeGame() {
 
     removeAllBalloons();
-
     resultOverlay.style.display =
         "none";
-
     message.style.display =
         "none";
-
     countdown.style.display =
         "none";
-
+    rewardScreen.style.display =
+    "none";
     scope.style.display =
         "block";
-
     updateScopePosition();
 
     console.log(
         "マウス操作版ゲームの初期化完了"
     );
 }
+// ==========================================================
+// 宝の地図GET画面
+// ==========================================================
 
+function showTreasureMapReward() {
+
+    rewardScreen.style.display =
+        "flex";
+
+    // アニメーションを毎回最初から再生
+    rewardTitle.style.animation =
+        "none";
+
+    mapPieceImage.style.animation =
+        "none";
+
+    void rewardTitle.offsetWidth;
+    void mapPieceImage.offsetWidth;
+
+    rewardTitle.style.animation =
+        "";
+
+    mapPieceImage.style.animation =
+        "";
+
+}
 initializeGame();
