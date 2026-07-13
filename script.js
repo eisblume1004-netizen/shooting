@@ -900,8 +900,8 @@ function createConfetti(
 
     const confettiCount =
         isGold
-            ? 30
-            : 18;
+            ? 60
+            : 40;
 
     const normalColors = [
         "#ff3f3f",
