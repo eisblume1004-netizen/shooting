@@ -1012,8 +1012,8 @@ body {
     position:
         absolute;
 
-    width:120px;
-    height:120px;
+    width:100px;
+    height:100px;
 
     border-radius:50%;
 
@@ -1050,10 +1050,10 @@ body {
 /* ゴールド風船の強い光 */
 .burst-flash.gold {
     width:
-        180px;
+        130px;
 
     height:
-        180px;
+        130px;
 
     background:
         radial-gradient(
