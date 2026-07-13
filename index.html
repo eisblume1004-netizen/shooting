@@ -10,37 +10,14 @@
     >
 
     <title>ジャングルバルーンシューティング</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <!-- ArUcoマーカー検出ライブラリ -->
-    <script
-        src="https://rawcdn.githack.com/damianofalcioni/js-aruco2/master/src/cv.js"
-    ></script>
-
-    <script
-        src="https://rawcdn.githack.com/damianofalcioni/js-aruco2/master/src/aruco.js"
-    ></script>
+　　<link
+    rel="stylesheet"
+    href="style.css?v=50"
+>
 </head>
-
 <body>
 
     <main id="game">
-
-        <!--
-            カメラ映像は画面には表示しません。
-            ArUcoマーカーを読み取るためだけに使います。
-        -->
-        <video
-            id="camera"
-            autoplay
-            playsinline
-            muted
-        ></video>
-
-        <!-- ArUco検出専用Canvas -->
-        <canvas id="detectCanvas"></canvas>
-
         <!-- タイトル -->
         <div id="title">
             ジャングルバルーンシューティング
